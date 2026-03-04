@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #13ec13;
+  --color-background-light: #f6f8f6;
+  --color-background-dark: #102210;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Tighter radii — crisp, not bubbly */
+  --radius-none: 0px;
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 0.875rem;
+  --radius-3xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Green-tinted shadows */
+  --shadow-card: 0 1px 3px rgba(19, 236, 19, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 2px 8px rgba(19, 236, 19, 0.15), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-glow: 0 0 12px rgba(19, 236, 19, 0.25), 0 0 4px rgba(19, 236, 19, 0.15);
+  --shadow-glow-lg: 0 0 20px rgba(19, 236, 19, 0.35), 0 0 8px rgba(19, 236, 19, 0.2);
+  --shadow-btn: 0 2px 8px rgba(19, 236, 19, 0.3);
+  --shadow-btn-hover: 0 4px 16px rgba(19, 236, 19, 0.45), 0 0 4px rgba(19, 236, 19, 0.2);
+}
+
+body {
+  min-height: max(884px, 100dvh);
+}
+
+/* ── Reusable card surface ── */
+.card {
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(19, 236, 19, 0.25);
+}
+.card-interactive {
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.card-interactive:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(19, 236, 19, 0.25);
+  transform: translateY(-1px);
+}
+.card-interactive:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Primary button glow ── */
+.btn-glow {
+  box-shadow: var(--shadow-btn);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.btn-glow:hover {
+  box-shadow: var(--shadow-btn-hover);
+  transform: translateY(-1px);
+}
+.btn-glow:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-btn);
+}
+
+/* ── Subtle green glow for accent elements ── */
+.glow {
+  box-shadow: var(--shadow-glow);
+  transition: box-shadow 0.2s ease;
+}
+.glow:hover {
+  box-shadow: var(--shadow-glow-lg);
+}
+
+/* ── Icon button hover ── */
+.icon-btn {
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.icon-btn:hover {
+  background-color: rgba(19, 236, 19, 0.12);
+  color: #13ec13;
+  box-shadow: 0 0 8px rgba(19, 236, 19, 0.15);
+}
+
+/* ── Chip / tag hover ── */
+.chip-hover {
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.chip-hover:hover {
+  box-shadow: 0 0 6px rgba(19, 236, 19, 0.12);
+  border-color: rgba(19, 236, 19, 0.2);
+}
+
+/* ── Input focus glow ── */
+.input-glow {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-glow:focus-within {
+  border-color: rgba(19, 236, 19, 0.4);
+  box-shadow: 0 0 0 3px rgba(19, 236, 19, 0.08), 0 0 8px rgba(19, 236, 19, 0.1);
+}
+
+.topo-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 100 C 20 80, 40 80, 60 100 S 100 120, 140 100 S 180 80, 200 100' stroke='%2313ec13' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3Cpath d='M0 150 C 30 130, 60 130, 90 150 S 140 170, 200 150' stroke='%2313ec13' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3Cpath d='M0 50 C 50 30, 100 70, 150 50 S 200 30, 250 50' stroke='%2313ec13' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.glass-nav {
+  background: rgba(246, 248, 246, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 -2px 20px rgba(19, 236, 19, 0.08), 0 -1px 6px rgba(0, 0, 0, 0.04);
+}
+
+.scanner-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(19, 236, 19, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(19, 236, 19, 0.1) 1px, transparent 1px);
+}
+
+.scan-line {
+  height: 2px;
+  background: linear-gradient(to right, transparent, #13ec13, transparent);
+  box-shadow: 0 0 15px #13ec13;
+  top: 40%;
+}
+
+.fill-1 {
+  font-variation-settings: 'FILL' 1;
+}
