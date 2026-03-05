@@ -3,12 +3,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: #13ec13;
-  --color-background-light: #f6f8f6;
+  --color-primary: #0df20d;
+  --color-background-light: #f5f8f5;
   --color-background-dark: #102210;
 
-  --font-display: var(--font-quicksand), "Quicksand", system-ui, sans-serif;
-  --font-mono: var(--font-quicksand), "Quicksand", system-ui, sans-serif;
+  --font-display: var(--font-lato), "Lato", system-ui, sans-serif;
+  --font-heading: var(--font-libre), "Libre Baskerville", Georgia, serif;
+  --font-mono: var(--font-lato), "Lato", system-ui, sans-serif;
 
   /* Tighter radii — crisp, not bubbly */
   --radius-none: 0px;
@@ -32,6 +33,11 @@
 
 body {
   min-height: max(884px, 100dvh);
+}
+
+/* ── Headings use Libre Baskerville ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 /* ── Reusable card surface ── */

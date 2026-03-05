@@ -57,7 +57,7 @@ const pastScans = [
 
 export default function CropDoctor() {
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark pb-28">
+    <div className="min-h-screen pb-28">
       {/* Header */}
       <header className="p-6 pt-8 flex items-center gap-3">
         <Link
