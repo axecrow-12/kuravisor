@@ -28,52 +28,44 @@ export default function Home() {
       {/* 4 Main Blocks */}
       <section className="px-6 mt-4">
         <div className="grid grid-cols-2 gap-4">
-          {/* My Farm */}
           <Link
             href="/farm-records"
-            className="flex flex-col gap-3 bg-white dark:bg-white/5 p-5 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[180px]"
+            className="flex flex-col items-center justify-center gap-3 bg-white dark:bg-white/5 p-6 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[140px]"
           >
             <div className="size-14 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-3xl text-blue-600 dark:text-blue-400 fill-1">dashboard</span>
             </div>
             <span className="text-lg font-extrabold">My Farm</span>
-            <p className="text-sm text-slate-500 leading-snug">Maize growing well. 2 plots active this season.</p>
           </Link>
 
-          {/* Crop Doctor */}
           <Link
             href="/crop-doctor"
-            className="flex flex-col gap-3 bg-white dark:bg-white/5 p-5 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[180px]"
+            className="flex flex-col items-center justify-center gap-3 bg-white dark:bg-white/5 p-6 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[140px]"
           >
             <div className="size-14 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-3xl text-green-600 dark:text-green-400 fill-1">local_hospital</span>
             </div>
             <span className="text-lg font-extrabold">Crop Doctor</span>
-            <p className="text-sm text-slate-500 leading-snug">Last scan: Healthy. 5 scans done so far.</p>
           </Link>
 
-          {/* Finances */}
           <Link
             href="/reports"
-            className="flex flex-col gap-3 bg-white dark:bg-white/5 p-5 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[180px]"
+            className="flex flex-col items-center justify-center gap-3 bg-white dark:bg-white/5 p-6 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[140px]"
           >
             <div className="size-14 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-3xl text-amber-600 dark:text-amber-400 fill-1">payments</span>
             </div>
             <span className="text-lg font-extrabold">Finances</span>
-            <p className="text-sm text-slate-500 leading-snug">Profit: $1,235. You earned more than you spent.</p>
           </Link>
 
-          {/* Calendar */}
           <Link
             href="/calendar"
-            className="flex flex-col gap-3 bg-white dark:bg-white/5 p-5 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[180px]"
+            className="flex flex-col items-center justify-center gap-3 bg-white dark:bg-white/5 p-6 rounded-2xl border-2 border-slate-100 dark:border-white/10 card-interactive min-h-[140px]"
           >
             <div className="size-14 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-3xl text-rose-600 dark:text-rose-400 fill-1">calendar_month</span>
             </div>
             <span className="text-lg font-extrabold">Calendar</span>
-            <p className="text-sm text-slate-500 leading-snug">Next task: Check for pests on 04 Mar.</p>
           </Link>
         </div>
       </section>
@@ -88,6 +80,62 @@ export default function Home() {
               <p className="text-base text-slate-600 dark:text-slate-400 mt-1">
                 Check your crops every week for pests. Early spotting means less damage and more harvest!
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Notifications */}
+      <section className="px-6 mt-6">
+        <h2 className="text-xl font-bold mb-3">What&apos;s Happening</h2>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3 bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10">
+            <div className="size-8 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-lg text-green-600">check_circle</span>
+            </div>
+            <div>
+              <p className="text-base font-bold">Your maize is growing well</p>
+              <p className="text-sm text-slate-400">2 plots active this season</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10">
+            <div className="size-8 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-lg text-green-600">verified</span>
+            </div>
+            <div>
+              <p className="text-base font-bold">Last scan was healthy</p>
+              <p className="text-sm text-slate-400">5 scans done so far</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10">
+            <div className="size-8 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-lg text-amber-600">trending_up</span>
+            </div>
+            <div>
+              <p className="text-base font-bold">You made $1,235 profit</p>
+              <p className="text-sm text-slate-400">You earned more than you spent</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10">
+            <div className="size-8 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-lg text-rose-600">event</span>
+            </div>
+            <div>
+              <p className="text-base font-bold">Check for pests on 04 Mar</p>
+              <p className="text-sm text-slate-400">Your next task is coming up</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10">
+            <div className="size-8 bg-red-100 dark:bg-red-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-lg text-red-600">warning</span>
+            </div>
+            <div>
+              <p className="text-base font-bold">Armyworm risk is high this week</p>
+              <p className="text-sm text-slate-400">Weather is helping pests spread</p>
             </div>
           </div>
         </div>

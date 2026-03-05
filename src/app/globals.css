@@ -7,8 +7,8 @@
   --color-background-light: #f6f8f6;
   --color-background-dark: #102210;
 
-  --font-display: "Nunito", sans-serif;
-  --font-mono: "Nunito", sans-serif;
+  --font-display: var(--font-quicksand), "Quicksand", system-ui, sans-serif;
+  --font-mono: var(--font-quicksand), "Quicksand", system-ui, sans-serif;
 
   /* Tighter radii — crisp, not bubbly */
   --radius-none: 0px;
