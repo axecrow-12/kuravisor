@@ -7,8 +7,8 @@
   --color-background-light: #f6f8f6;
   --color-background-dark: #102210;
 
-  --font-display: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Nunito", sans-serif;
+  --font-mono: "Nunito", sans-serif;
 
   /* Tighter radii — crisp, not bubbly */
   --radius-none: 0px;

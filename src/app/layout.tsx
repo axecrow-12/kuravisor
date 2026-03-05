@@ -4,9 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: {
     template: "%s | KuraVisor",
-    default: "KuraVisor Home Dashboard",
+    default: "KuraVisor",
   },
-  description: "KuraVisor Farm Dashboard",
+  description: "KuraVisor - Your Farming Helper",
 };
 
 export default function RootLayout({
@@ -18,11 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
           rel="stylesheet"
         />
         <link
@@ -30,7 +26,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+      <body className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased text-lg">
         {children}
       </body>
     </html>
