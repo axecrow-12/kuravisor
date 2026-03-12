@@ -1,0 +1,65 @@
+$kind: http-request
+name: Login
+method: POST
+url: '{{base_url}}/api/auth/login'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{test_email}}",
+      "password": "{{test_password}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Test: Status code should be 200 for successful login
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      // Test: Response time should be under 2 seconds
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // Test: Response should be JSON
+      pm.test("Response is JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      // Test: Response body structure
+      pm.test("Response has required fields", function () {
+          const jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("message");
+          pm.expect(jsonData).to.have.property("token");
+          pm.expect(jsonData).to.have.property("user");
+      });
+
+      // Test: User object structure
+      pm.test("User object has correct structure", function () {
+          const jsonData = pm.response.json();
+          pm.expect(jsonData.user).to.have.property("id");
+          pm.expect(jsonData.user).to.have.property("name");
+          pm.expect(jsonData.user).to.have.property("email");
+          pm.expect(jsonData.user.id).to.be.a("string");
+          pm.expect(jsonData.user.name).to.be.a("string");
+          pm.expect(jsonData.user.email).to.be.a("string");
+      });
+
+      // Test: Token is a valid JWT format (3 parts separated by dots)
+      pm.test("Token is valid JWT format", function () {
+          const jsonData = pm.response.json();
+          const tokenParts = jsonData.token.split(".");
+          pm.expect(tokenParts).to.have.lengthOf(3);
+      });
+
+      // Store token for subsequent requests
+      if (pm.response.code === 200) {
+          const jsonData = pm.response.json();
+          pm.collectionVariables.set("auth_token", jsonData.token);
+      }

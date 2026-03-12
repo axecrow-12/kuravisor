@@ -1,0 +1,39 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  farms     Farm[]
+  createdAt DateTime @default(now())
+}
+
+model Farm {
+  id        String   @id @default(uuid())
+  name      String
+  location  String
+  size      Float
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  records   Record[]
+  createdAt DateTime @default(now())
+}
+
+model Record {
+  id          String   @id @default(uuid())
+  cropType    String
+  disease     String?
+  yield       Float?
+  cost        Float?
+  revenue     Float?
+  farm        Farm     @relation(fields: [farmId], references: [id])
+  farmId      String
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,22 @@
+name: KuraVisor Development
+values:
+  - key: base_url
+    value: 'http://localhost:5000'
+    enabled: true
+    type: default
+  - key: auth_token
+    value: ''
+    enabled: true
+    type: default
+  - key: test_email
+    value: 'dev-test@example.com'
+    enabled: true
+    type: default
+  - key: test_password
+    value: 'DevPassword123!'
+    enabled: true
+    type: default
+  - key: test_name
+    value: 'Dev Test User'
+    enabled: true
+    type: default

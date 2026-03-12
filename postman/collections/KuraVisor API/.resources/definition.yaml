@@ -1,0 +1,28 @@
+$kind: collection
+name: KuraVisor API
+description: |-
+  API collection for KuraVisor - a farm management and crop disease tracking application.
+  
+  ## Endpoints
+  - **Auth**: User registration and login with JWT authentication
+  - **Protected**: Profile access requiring Bearer token
+  
+  ## Authentication
+  All protected routes require a Bearer token in the Authorization header.
+  Use the login or register endpoints to obtain a token.
+variables:
+  - key: base_url
+    value: 'http://localhost:5000'
+    description: Backend server base URL
+  - key: auth_token
+    value: ''
+    description: JWT token obtained from login/register
+  - key: test_email
+    value: 'test@example.com'
+    description: Test user email
+  - key: test_password
+    value: 'TestPassword123!'
+    description: Test user password
+  - key: test_name
+    value: 'Test User'
+    description: Test user name

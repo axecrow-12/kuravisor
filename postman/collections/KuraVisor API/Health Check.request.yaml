@@ -1,0 +1,24 @@
+$kind: http-request
+name: Health Check
+method: GET
+url: '{{base_url}}/'
+order: 100
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Test: Status code should be 200
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      // Test: Response time should be under 1 second for health check
+      pm.test("Response time is under 1 second", function () {
+          pm.expect(pm.response.responseTime).to.be.below(1000);
+      });
+
+      // Test: Response body contains expected message
+      pm.test("Response indicates server is running", function () {
+          pm.expect(pm.response.text()).to.include("KuraVisor");
+          pm.expect(pm.response.text()).to.include("running");
+      });

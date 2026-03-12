@@ -1,0 +1,39 @@
+$kind: http-request
+name: 'Login - Missing Fields'
+method: POST
+url: '{{base_url}}/api/auth/login'
+order: 2600
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "test@example.com"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Test: Status code should be 400 for missing fields
+      pm.test("Status code is 400 Bad Request", function () {
+          pm.response.to.have.status(400);
+      });
+
+      // Test: Response time should be under 2 seconds
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // Test: Response should be JSON
+      pm.test("Response is JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      // Test: Error message indicates missing fields
+      pm.test("Error message indicates required fields", function () {
+          const jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("message");
+          pm.expect(jsonData.message.toLowerCase()).to.include("required");
+      });

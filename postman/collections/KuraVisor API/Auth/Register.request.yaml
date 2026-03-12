@@ -1,0 +1,60 @@
+$kind: http-request
+name: Register
+method: POST
+url: '{{base_url}}/api/auth/register'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "{{test_name}}",
+      "email": "{{test_email}}",
+      "password": "{{test_password}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Test: Status code should be 201 for successful registration or 409 if user exists
+      pm.test("Status code is 201 or 409", function () {
+          pm.expect(pm.response.code).to.be.oneOf([201, 409]);
+      });
+
+      // Test: Response time should be under 2 seconds
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // Test: Response should be JSON
+      pm.test("Response is JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      // Test: Response body structure for success
+      if (pm.response.code === 201) {
+          pm.test("Success response has required fields", function () {
+              const jsonData = pm.response.json();
+              pm.expect(jsonData).to.have.property("message");
+              pm.expect(jsonData).to.have.property("token");
+              pm.expect(jsonData).to.have.property("user");
+              pm.expect(jsonData.user).to.have.property("id");
+              pm.expect(jsonData.user).to.have.property("name");
+              pm.expect(jsonData.user).to.have.property("email");
+          });
+
+          // Store token for subsequent requests
+          const jsonData = pm.response.json();
+          pm.collectionVariables.set("auth_token", jsonData.token);
+      }
+
+      // Test: Error response structure
+      if (pm.response.code === 409) {
+          pm.test("Conflict response has message", function () {
+              const jsonData = pm.response.json();
+              pm.expect(jsonData).to.have.property("message");
+              pm.expect(jsonData.message).to.include("already exists");
+          });
+      }

@@ -1,0 +1,32 @@
+$kind: http-request
+name: 'Get Profile - No Token'
+method: GET
+url: '{{base_url}}/api/profile'
+order: 3500
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Test: Status code should be 401 for missing token
+      pm.test("Status code is 401 Unauthorized", function () {
+          pm.response.to.have.status(401);
+      });
+
+      // Test: Response time should be under 2 seconds
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // Test: Response should be JSON
+      pm.test("Response is JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      // Test: Error message about missing token
+      pm.test("Error message indicates missing token", function () {
+          const jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("message");
+          pm.expect(jsonData.message.toLowerCase()).to.satisfy(function(msg) {
+              return msg.includes("missing") || msg.includes("invalid") || msg.includes("token");
+          });
+      });

@@ -1,0 +1,18 @@
+$kind: collection
+name: Protected
+description: |-
+  Protected endpoints requiring JWT authentication.
+  
+  ## Authentication
+  All requests must include:
+  ```
+  Authorization: Bearer <token>
+  ```
+  
+  ## Endpoints
+  - GET /api/profile - Get current user profile from token
+  
+  ## Error Responses
+  - 401: Missing or malformed Authorization header
+  - 403: Invalid or expired token
+order: 2
