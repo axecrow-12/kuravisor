@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { href: "/", icon: "home", label: "Home" },
   { href: "/farm-records", icon: "eco", label: "Crops" },
-  { href: "/crop-doctor", icon: "camera", label: "", isFab: true },
-  { href: "/reports", icon: "monitoring", label: "Finance" },
+  { href: "/crop-doctor", icon: "photo_camera", label: "", isFab: true },
   { href: "/calendar", icon: "inventory", label: "Tasks" },
+  { href: "/profile", icon: "person", label: "Profile" },
 ];
 
 export default function BottomNav() {
@@ -30,7 +30,7 @@ export default function BottomNav() {
                 href={item.href}
                 className="flex flex-col items-center justify-center bg-primary text-white size-12 rounded-full -translate-y-4 shadow-lg border-4 border-background-light dark:border-background-dark"
               >
-                <span className="material-symbols-outlined text-[30px]">camera</span>
+                <span className="material-symbols-outlined text-[30px]">photo_camera</span>
               </Link>
             );
           }
