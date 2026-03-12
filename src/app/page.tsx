@@ -1,160 +1,179 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
+import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 
 export const metadata: Metadata = {
-  title: "KuraVisor Home Dashboard",
+  title: "KuraVisor - Home",
 };
 
 export default function Home() {
   return (
-    <div className="topo-pattern min-h-screen pb-24">
-      {/* Header Section */}
-      <header className="p-6 flex items-center justify-between sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full border-2 border-primary overflow-hidden bg-primary/10">
-            <img
-              alt="Farmer profile"
-              className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuASy6hbDq9waDrRWE5GabrOruHiKxoDJ8bgW3dNaEuMDlcZF8PCwDMAOR_5fXLVVIyjfMx_1SabtaWTmThwj-wEHMcsYJgWMCfT5fzNgC7WBYZkiAJOXY8a67URvaWi1OnMIl_cBzuFE4tw2_KwsTFjk3LjGRlXTHbI1RL8BUsbfnzS9TZJ4INN9wFwyEXicBCUXQQ-7NXKYRVvyjOEexotPSnuqGgrXxWADX7D3sihM96YpRExzZGSDh7Z7FM3oQ_fu5hgMiJg8F3k"
+    <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-hidden pb-24">
+      {/* Header */}
+      <header className="flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20 p-4 pb-2 justify-between">
+        <Link href="/profile" className="flex size-12 shrink-0 items-center">
+          <div className="bg-primary/20 p-1 rounded-full">
+            <div
+              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary"
+              style={{
+                backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuCvn10PKgNBWdKgOMwnmHGxerdwdP84mM0P0W_BfPKnjFOkzuIHR8azXKusMmrNBzASLuS5NPYtAYmFBCuvBdSCZ_OJT_DTSSiG3u17vm5cP3miz4b4rtuC42BdVJe478KkjwLCSEHo5pspNqFRz2yuSTf6VO1hT9UF61m28tVADNswtbofnfhRX1bVS3kuM9hR8UV2BSX0C1PaIIsYrcitF_rc95P5W7DWPmMFiEEsSdOhrS4nqhzxBAfgnnUieh6ibTDE1MT7O5E")`,
+              }}
             />
           </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Smallholder ID: #4492</p>
-            <h1 className="text-xl font-bold leading-tight">Musa&apos;s Acre</h1>
-          </div>
+        </Link>
+        <div className="flex-1 ml-3">
+          <h2 className="text-slate-900 dark:text-white text-lg font-extrabold leading-tight tracking-tight">Hello, Musa</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-xs">Farm Owner &bull; Premium Plan</p>
         </div>
         <div className="flex gap-2">
-          <button className="size-10 flex items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/10 icon-btn">
-            <span className="material-symbols-outlined text-xl">notifications</span>
+          <button className="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-[24px]">search</span>
           </button>
-          <button className="size-10 flex items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/10 icon-btn">
-            <span className="material-symbols-outlined text-xl">satellite_alt</span>
-          </button>
+          <Link href="/settings" className="relative flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-[24px]">notifications</span>
+            <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
+          </Link>
         </div>
       </header>
 
-      {/* Sync Status Bar */}
-      <section className="px-6 mb-6">
-        <div className="bg-white/60 dark:bg-white/5 border border-primary/20 p-4 rounded-xl flex items-center justify-between card">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <span className="material-symbols-outlined text-primary text-2xl">cloud_off</span>
-              <span className="absolute -top-1 -right-1 block size-2.5 bg-primary rounded-full border-2 border-white dark:border-background-dark"></span>
-            </div>
-            <div>
-              <p className="text-sm font-bold">Offline Mode Active</p>
-              <p className="text-xs text-slate-500 font-mono italic">Last sync: 14:02 UTC</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-mono font-bold text-primary">100% READY</p>
-            <div className="w-20 h-1 bg-slate-200 dark:bg-white/10 rounded-full mt-1 overflow-hidden">
-              <div className="h-full bg-primary w-full shadow-[0_0_8px_rgba(19,236,19,0.6)]"></div>
-            </div>
-          </div>
+      {/* Main Content */}
+      <main className="px-4 py-2">
+        <div className="mb-6">
+          <p className="text-slate-600 dark:text-slate-400 text-base font-medium">What would you like to do today?</p>
         </div>
-      </section>
 
-      {/* Main Farm Stats */}
-      <section className="px-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">Bio-Metrics</h2>
-          <span className="text-primary font-mono text-xs font-bold px-2 py-1 bg-primary/10 rounded">LIVE DATA</span>
+        {/* 4 Image Blocks */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <Link href="/farm-records" className="group relative overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 aspect-square">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+            <img
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              alt="Aerial view of green agricultural fields"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC15L_J1XEn4BbXgXzFpSlGw9-ER35zn1p7_TybiOMwMjZvs0VjyqcvD8TUuxgRGaUwvQCKPv2tYKPnQQP1iWN5yJsVQb3x9qLHmDAFrmcTe9RwUMeg4puRGqUm3K1RwadfTsWx77ax_Tsp5Nf2TGc_1c30lNspNGR7Oa5qPR6xoxeWW9Lg-Qg61Gdr5sQRYDJriB-rXsoHlTsV5H9gIvOkSl_d6AHTDhxUDglR4X0Q_QWovX-rcoxabgsQRuK1rFjU3Zky0hWU4fI"
+            />
+            <div className="absolute bottom-3 left-3 z-20">
+              <span className="material-symbols-outlined text-primary mb-1">potted_plant</span>
+              <p className="text-white text-base font-bold leading-tight">My Farm</p>
+              <p className="text-white/70 text-[10px] uppercase tracking-wider">4 Active Zones</p>
+            </div>
+          </Link>
+
+          <Link href="/crop-doctor" className="group relative overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 aspect-square">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+            <img
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              alt="Microscopic close up of a plant leaf"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD956YyJZ-F3q4eGuGiOxFLdXPMdZNUJAbyj0TapP9oDFdBbf0Tsjh40poNlXXornLLiR5chQ7o3P1OmYHyvvVpuFdhowr6XnkG0-lWuwEUGlcDlFTdJPm7fI080VWH1mfTquyywq29xbyxQbb_1JEduygfj3RUsg8F3-5GJbPhFzZbQ1-T_aaxchVs4vVcYIiVnXsQ9n04iLBCy580Y1dHAJ8UuLKobRa6Cog4V8S2mkwT8jmNImGXz7qgWjam-HcyaSwu6U7LEvc"
+            />
+            <div className="absolute bottom-3 left-3 z-20">
+              <span className="material-symbols-outlined text-primary mb-1">health_metrics</span>
+              <p className="text-white text-base font-bold leading-tight">Crop Doctor</p>
+              <p className="text-white/70 text-[10px] uppercase tracking-wider">AI Diagnosis</p>
+            </div>
+          </Link>
+
+          <Link href="/reports" className="group relative overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 aspect-square">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+            <img
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              alt="Financial charts and calculation equipment"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9ptXmK1jD3HR6XkUnT5pb-aiV0WTSE9vAlXvDMZjD9otog7ct_gU91NGltEmWaOTxl2i8pCli84auAzydRTNzw5KboBhYk0az0AvZXbBocUjVKu660myIoBRrDU0dvaFKwOEwt93SZtR_ZU_9VuJje8gGwzg-VzMCZJSi_Fqq5XBnUPSOSXEfomILvMmePepJ1m5joA9JTMZuY9ob5xjceZv40SLtCW_9biw51ZS1mpe3NITQGEL-1dk2rMR7eIPcoZBpzNJsF8U"
+            />
+            <div className="absolute bottom-3 left-3 z-20">
+              <span className="material-symbols-outlined text-primary mb-1">payments</span>
+              <p className="text-white text-base font-bold leading-tight">Finances</p>
+              <p className="text-white/70 text-[10px] uppercase tracking-wider">Profit: +12%</p>
+            </div>
+          </Link>
+
+          <Link href="/calendar" className="group relative overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800 aspect-square">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+            <img
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              alt="A clean modern monthly calendar page"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4Ly2PnCuqj0RWQy6LxAPAQNKy3RLGMqiymsANEfvEL_GD0895KO77hy34fexnhXaqHIb8GJmGSdLXwTEt2gB_ZU-6VBpTQgjh3XC4HpHPOIFf-iSPtuOFRQ0792P5mV9dYO2jvdzo-9CFh5E22j7qYwjYJBDPniJ7GQMHdgGHFCdHklNNUjAzFe7uVJe2yH46yBHjyXvPM9r05ACOT1B7wDsNa7b8CyUHeSxSsmym6CGbGGEiffCCWYDoJ-domsQbmiwsmjEBEg"
+            />
+            <div className="absolute bottom-3 left-3 z-20">
+              <span className="material-symbols-outlined text-primary mb-1">calendar_month</span>
+              <p className="text-white text-base font-bold leading-tight">Calendar</p>
+              <p className="text-white/70 text-[10px] uppercase tracking-wider">3 Tasks Today</p>
+            </div>
+          </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-white/5 p-5 rounded-2xl border border-slate-100 dark:border-white/5 card">
-            <div className="flex justify-between items-start mb-3">
-              <span className="material-symbols-outlined text-primary">water_drop</span>
-              <span className="text-[10px] font-mono text-rose-500 font-bold">-2.4%</span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium mb-1 uppercase tracking-tighter">Soil Moisture</p>
-            <p className="text-3xl font-mono font-bold">32.8<span className="text-sm font-normal">%</span></p>
+
+        {/* Tip of the Day */}
+        <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-primary">lightbulb</span>
+            <h3 className="text-slate-900 dark:text-slate-100 font-bold">Tip of the Day</h3>
           </div>
-          <div className="bg-white dark:bg-white/5 p-5 rounded-2xl border border-slate-100 dark:border-white/5 card">
-            <div className="flex justify-between items-start mb-3">
-              <span className="material-symbols-outlined text-primary">eco</span>
-              <span className="text-[10px] font-mono text-primary font-bold">+5.1%</span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium mb-1 uppercase tracking-tighter">NDVI Health</p>
-            <p className="text-3xl font-mono font-bold">0.82</p>
+          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+            Check the undersides of leaves for armyworm eggs. Early manual removal can prevent large-scale infestations without chemical use.
+          </p>
+        </div>
+
+        {/* What's Happening */}
+        <section className="mb-8">
+          <div className="flex justify-between items-end mb-4 px-1">
+            <h3 className="text-slate-900 dark:text-slate-100 text-lg font-bold tracking-tight">What&apos;s Happening</h3>
+            <Link className="text-primary text-sm font-semibold" href="#">View All</Link>
           </div>
-          <div className="col-span-2 bg-primary dark:bg-primary/90 text-background-dark p-6 rounded-2xl relative overflow-hidden group glow">
-            <div className="absolute top-0 right-0 p-4 opacity-20 transform translate-x-4 -translate-y-4 group-hover:translate-x-2 transition-transform">
-              <span className="material-symbols-outlined text-8xl">agriculture</span>
+          <div className="space-y-3">
+            <div className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+              <div className="size-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 mr-3">
+                <span className="material-symbols-outlined">eco</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">Maize Growth</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">Stage: Vegetative (V4)</p>
+              </div>
+              <div className="text-right">
+                <span className="text-green-600 font-bold">+8%</span>
+              </div>
             </div>
-            <div className="relative z-10">
-              <p className="text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Crop Status: Maize</p>
-              <h3 className="text-2xl font-bold mb-4 italic font-mono">Vegetative V4</h3>
-              <div className="flex gap-4">
-                <div>
-                  <p className="text-[10px] font-bold uppercase opacity-70">Irrigation</p>
-                  <p className="font-mono font-bold">Optimal</p>
-                </div>
-                <div className="w-px h-8 bg-background-dark/20"></div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase opacity-70">Est. Yield</p>
-                  <p className="font-mono font-bold">4.2t/ha</p>
-                </div>
+
+            <div className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+              <div className="size-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mr-3">
+                <span className="material-symbols-outlined">check_circle</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">Healthy Scan Stats</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">98% of plants clear</p>
+              </div>
+              <div className="text-right text-slate-400">
+                <span className="material-symbols-outlined">chevron_right</span>
+              </div>
+            </div>
+
+            <div className="flex items-center p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+              <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mr-3">
+                <span className="material-symbols-outlined">trending_up</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">Profit Figures</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">Estimated harvest value</p>
+              </div>
+              <div className="text-right">
+                <span className="text-slate-900 dark:text-slate-100 font-bold">$12,450</span>
+              </div>
+            </div>
+
+            <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm">
+              <div className="size-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mr-3">
+                <span className="material-symbols-outlined">warning</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">Armyworm Risk Alert</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">High risk in Zone B</p>
+              </div>
+              <div className="text-right">
+                <button className="px-3 py-1 bg-red-600 text-white text-[10px] font-bold rounded-full uppercase tracking-tight">Act Now</button>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Recent Alerts */}
-      <section className="px-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">Priority Alerts</h2>
-          <button className="text-primary text-xs font-bold flex items-center">VIEW LOG <span className="material-symbols-outlined text-sm ml-1">arrow_forward_ios</span></button>
-        </div>
-        <div className="space-y-3">
-          <div className="flex gap-4 p-4 bg-white dark:bg-white/5 rounded-xl border-l-4 border-amber-400 items-center card">
-            <div className="size-10 bg-amber-400/10 text-amber-500 rounded-full flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined">warning</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold">Low Nitrogen detected in Plot B</p>
-              <p className="text-xs text-slate-500">Manual inspection recommended within 48h</p>
-            </div>
-            <p className="text-[10px] font-mono text-slate-400">14m</p>
-          </div>
-          <div className="flex gap-4 p-4 bg-white dark:bg-white/5 rounded-xl border-l-4 border-rose-500 items-center card">
-            <div className="size-10 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined">pest_control</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold">Fall Armyworm Risk High</p>
-              <p className="text-xs text-slate-500">Weather conditions favor migration</p>
-            </div>
-            <p className="text-[10px] font-mono text-slate-400">2h</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Farm Map Preview */}
-      <section className="px-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">Plot Geometry</h2>
-        </div>
-        <div className="h-48 rounded-2xl overflow-hidden relative border border-slate-200 dark:border-white/10 shadow-lg">
-          <img
-            alt="Farm aerial view"
-            className="w-full h-full object-cover"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGB9i5ZeH0pLHzPl1dS9Rka2sJpsTNcB_IHn_nAROSIn2cNGAlPitzBMN9QSQoaU0hU3kd7OqhdhxpfB2cFeVY7Tq_1FM8A41OuCsShXNeykmZ6gQrPpJLZk7c6g0Rw3LNNJvbTStzBVZaRXKB9Pbr8KXmwPd-pNHsenrsByMEuyobLcatCkuRj0-sv1gr-6gFbs134E6oEoLaU_cggmDkFjfaLJXyrL-rMNxqTcq1Rn7gZ4tN98HPpo8xjuy7I3VxlrVe0HyRSv4F"
-          />
-          <div className="absolute inset-0 bg-primary/20 mix-blend-overlay"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="size-16 rounded-full bg-primary/30 flex items-center justify-center animate-pulse border border-primary/50">
-              <div className="size-4 bg-primary rounded-full shadow-[0_0_15px_#13ec13]"></div>
-            </div>
-          </div>
-          <div className="absolute bottom-3 left-3 bg-background-dark/90 text-white px-3 py-1.5 rounded-full text-[10px] font-mono flex items-center gap-2">
-            <span className="size-1.5 bg-primary rounded-full"></span>
-            GPS: -1.2921, 36.8219
-          </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       <BottomNav />
     </div>

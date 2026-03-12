@@ -4,43 +4,59 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/", icon: "grid_view", label: "Home" },
-  { href: "/crop-doctor", icon: "document_scanner", label: "Scan" },
-  { href: "/farm-records", icon: "inventory_2", label: "Records" },
-  { href: "/calendar", icon: "calendar_month", label: "Calendar" },
-  { href: "/settings", icon: "settings", label: "Settings" },
+  { href: "/", icon: "home", label: "Home" },
+  { href: "/farm-records", icon: "eco", label: "Crops" },
+  { href: "/crop-doctor", icon: "camera", label: "", isFab: true },
+  { href: "/reports", icon: "monitoring", label: "Finance" },
+  { href: "/calendar", icon: "inventory", label: "Tasks" },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md h-16 glass-nav border border-white/40 dark:border-white/10 rounded-full flex items-center justify-around px-2 z-50">
-      {navItems.map((item) => {
-        const isActive =
-          item.href === "/"
-            ? pathname === "/"
-            : pathname.startsWith(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`flex flex-col items-center justify-center size-12 rounded-full transition-all duration-200 ${
-              isActive
-                ? "bg-primary text-background-dark glow"
-                : "text-slate-500 icon-btn"
-            }`}
-          >
-            <span
-              className={`material-symbols-outlined text-xl ${
-                isActive ? "fill-1" : ""
+    <nav className="fixed bottom-0 left-0 right-0 max-w-screen-sm mx-auto z-30">
+      <div className="mx-4 mb-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-lg px-2 py-2 flex items-center justify-around">
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+
+          if (item.isFab) {
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex flex-col items-center justify-center bg-primary text-white size-12 rounded-full -translate-y-4 shadow-lg border-4 border-background-light dark:border-background-dark"
+              >
+                <span className="material-symbols-outlined text-[30px]">camera</span>
+              </Link>
+            );
+          }
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center gap-1 p-2 ${
+                isActive ? "text-primary" : "text-slate-400 dark:text-slate-500"
               }`}
             >
-              {item.icon}
-            </span>
-          </Link>
-        );
-      })}
+              <span
+                className={`material-symbols-outlined text-[26px] ${
+                  isActive ? "fill-1" : ""
+                }`}
+              >
+                {item.icon}
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-tighter">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
