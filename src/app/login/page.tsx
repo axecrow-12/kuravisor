@@ -1,75 +1,120 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import AuthLayout, { FormError } from "@/components/AuthLayout";
+import { Field, Icon, inputClass } from "@/components/ui";
+import { ApiError, login } from "@/lib/api";
+import { actions, getState } from "@/lib/store";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [offline, setOffline] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setOffline(false);
+    setBusy(true);
+    try {
+      const { token, user } = await login(email.trim(), password);
+      // Keep details the farmer entered on this device earlier (phone, location).
+      const prev = getState().profile;
+      actions.signIn({
+        name: user.name,
+        email: user.email,
+        phone: prev?.phone ?? "",
+        location: prev?.location ?? "",
+        gps: prev?.gps,
+        accountType: "cloud",
+        userId: user.id,
+        token,
+      });
+      // AppShell redirects home once a profile exists.
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed.");
+      setOffline(err instanceof ApiError && err.status === 0);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
-      {/* Top Section with Branding */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-8">
-        <div className="size-20 rounded-full bg-primary/20 flex items-center justify-center mb-6 border-2 border-primary/40 glow">
-          <span className="material-symbols-outlined text-primary text-4xl">eco</span>
-        </div>
-        <h1 className="text-3xl font-bold mb-2 text-center">KuraVisor</h1>
-        <p className="text-sm text-slate-500 text-center max-w-xs">
-          Offline Crop Doctor & Smart Farm Assistant for Smallholder Farmers
-        </p>
-      </div>
+    <AuthLayout
+      icon="eco"
+      title="KuraVisor"
+      subtitle="Offline crop doctor and farm assistant for smallholder farmers"
+    >
+      <h2 className="text-lg font-bold mb-6">Welcome back</h2>
 
-      {/* Login Form */}
-      <div className="bg-white dark:bg-white/5 rounded-t-3xl px-6 pt-8 pb-10 border-t border-primary/10 card">
-        <h2 className="text-lg font-bold mb-6">Welcome Back</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Field label="Email" htmlFor="email">
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className={inputClass}
+          />
+        </Field>
 
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Phone Number
-            </label>
-            <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 input-glow">
-              <span className="material-symbols-outlined text-slate-400 text-xl">phone</span>
-              <input
-                type="tel"
-                placeholder="+263 7X XXX XXXX"
-                className="bg-transparent flex-1 text-sm font-medium outline-none placeholder:text-slate-400"
-              />
-            </div>
+        <Field label="Password" htmlFor="password">
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
+              className={`${inputClass} pr-12`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-2 top-1/2 -translate-y-1/2 size-9 flex items-center justify-center rounded-full text-slate-500 icon-btn"
+            >
+              <Icon name={showPassword ? "visibility_off" : "visibility"} className="text-xl" />
+            </button>
           </div>
+        </Field>
 
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              PIN
-            </label>
-            <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 input-glow">
-              <span className="material-symbols-outlined text-slate-400 text-xl">lock</span>
-              <input
-                type="password"
-                maxLength={6}
-                placeholder="Enter 4–6 digit PIN"
-                className="bg-transparent flex-1 text-sm font-medium outline-none placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-
-          <button className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow mt-2">
-            <span className="material-symbols-outlined">login</span>
-            Sign In
-          </button>
-
-          <button className="w-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-xl flex items-center justify-center gap-2 card">
-            <span className="material-symbols-outlined">fingerprint</span>
-            Use Fingerprint
-          </button>
-        </div>
-
-        <div className="mt-6 text-center">
+        <FormError message={error} />
+        {offline && (
           <p className="text-sm text-slate-500">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-primary font-bold">
-              Register
-            </Link>
+            No connection? You can{" "}
+            <Link href="/register?offline=1" className="text-brand font-bold">
+              use KuraVisor offline
+            </Link>{" "}
+            and sign in later.
           </p>
-        </div>
-      </div>
-    </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-60"
+        >
+          <Icon name={busy ? "progress_activity" : "login"} className={busy ? "animate-spin" : ""} />
+          {busy ? "Signing in…" : "Sign In"}
+        </button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-slate-500">
+        Don&apos;t have an account?{" "}
+        <Link href="/register" className="text-brand font-bold">
+          Register
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }

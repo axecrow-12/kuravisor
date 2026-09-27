@@ -1,157 +1,87 @@
-import Link from "next/link";
+"use client";
+
+import { useMemo, useState } from "react";
 import BottomNav from "@/components/BottomNav";
-import type { Metadata } from "next";
+import PageHeader, { HeaderIconLink } from "@/components/PageHeader";
+import ScanRow, { scanOutcome } from "@/components/ScanRow";
+import { EmptyState } from "@/components/ui";
+import { cropLabel } from "@/lib/library";
+import { useAppState } from "@/lib/store";
 
-export const metadata: Metadata = {
-  title: "Scan History",
-};
-
-const scanHistory = [
-  {
-    id: "1",
-    date: "04 Mar 2026",
-    time: "14:32",
-    crop: "Maize",
-    diagnosis: "Fall Armyworm",
-    confidence: 92,
-    severity: "High",
-    severityColor: "rose",
-  },
-  {
-    id: "2",
-    date: "02 Mar 2026",
-    time: "09:15",
-    crop: "Tomato",
-    diagnosis: "Early Blight",
-    confidence: 87,
-    severity: "Medium",
-    severityColor: "amber",
-  },
-  {
-    id: "3",
-    date: "28 Feb 2026",
-    time: "16:45",
-    crop: "Maize",
-    diagnosis: "Healthy",
-    confidence: 96,
-    severity: "None",
-    severityColor: "primary",
-  },
-  {
-    id: "4",
-    date: "25 Feb 2026",
-    time: "11:20",
-    crop: "Potato",
-    diagnosis: "Late Blight",
-    confidence: 89,
-    severity: "Critical",
-    severityColor: "rose",
-  },
-  {
-    id: "5",
-    date: "22 Feb 2026",
-    time: "08:30",
-    crop: "Groundnut",
-    diagnosis: "Leaf Spot",
-    confidence: 78,
-    severity: "Low",
-    severityColor: "blue",
-  },
-  {
-    id: "6",
-    date: "20 Feb 2026",
-    time: "13:10",
-    crop: "Maize",
-    diagnosis: "Nitrogen Deficiency",
-    confidence: 84,
-    severity: "Medium",
-    severityColor: "amber",
-  },
-];
+type Outcome = "all" | "problems" | "healthy";
 
 export default function ScanHistoryPage() {
+  const { scans } = useAppState();
+  const [crop, setCrop] = useState("all");
+  const [outcome, setOutcome] = useState<Outcome>("all");
+
+  const crops = useMemo(() => [...new Set(scans.map((s) => s.crop))], [scans]);
+  const filtered = scans.filter((s) => {
+    if (crop !== "all" && s.crop !== crop) return false;
+    const healthy = scanOutcome(s).tone === "good";
+    return outcome === "all" || (outcome === "healthy" ? healthy : !healthy);
+  });
+  const problems = scans.filter((s) => scanOutcome(s).tone !== "good").length;
+
+  const chip = (active: boolean) =>
+    `px-4 py-2 text-xs font-bold rounded-full shrink-0 transition-colors ${
+      active
+        ? "bg-primary text-background-dark"
+        : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10"
+    }`;
+
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark pb-28">
-      {/* Header */}
-      <header className="p-4 pt-6 flex items-center justify-between sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/10 icon-btn"
-          >
-            <span className="material-symbols-outlined">arrow_back_ios_new</span>
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold leading-tight">Scan History</h1>
-            <p className="text-xs text-slate-500">{scanHistory.length} scans recorded</p>
-          </div>
-        </div>
-        <button className="size-10 flex items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/10 icon-btn">
-          <span className="material-symbols-outlined text-xl">filter_list</span>
-        </button>
-      </header>
+    <div className="min-h-dvh pb-28">
+      <PageHeader
+        title="Scan History"
+        subtitle={scans.length ? `${scans.length} checks · ${problems} with problems` : "Your crop checks"}
+        backHref="/crop-doctor"
+        rightAction={<HeaderIconLink href="/crop-doctor" icon="add_a_photo" label="New check" primary />}
+      />
 
-      {/* Filter Chips */}
-      <section className="px-6 mt-4 mb-4">
-        <div className="flex gap-2 overflow-x-auto">
-          <button className="px-4 py-2 bg-primary text-background-dark text-xs font-bold rounded-full shrink-0 btn-glow">All Crops</button>
-          <button className="px-4 py-2 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full border border-slate-200 dark:border-white/10 shrink-0 chip-hover">Maize</button>
-          <button className="px-4 py-2 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full border border-slate-200 dark:border-white/10 shrink-0 chip-hover">Tomato</button>
-          <button className="px-4 py-2 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full border border-slate-200 dark:border-white/10 shrink-0 chip-hover">Potato</button>
-          <button className="px-4 py-2 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full border border-slate-200 dark:border-white/10 shrink-0 chip-hover">Groundnut</button>
+      {scans.length === 0 ? (
+        <div className="px-4 mt-6">
+          <EmptyState
+            icon="photo_camera"
+            title="No checks yet"
+            text="Use Crop Doctor to check a plant. Every check is saved here so you can follow a problem over time."
+            action={{ href: "/crop-doctor", label: "Check a plant", icon: "photo_camera" }}
+          />
         </div>
-      </section>
+      ) : (
+        <>
+          <section className="px-4 mt-4 mb-4 space-y-2">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {(["all", "problems", "healthy"] as Outcome[]).map((o) => (
+                <button key={o} type="button" aria-pressed={outcome === o} onClick={() => setOutcome(o)} className={chip(outcome === o)}>
+                  {o === "all" ? "All results" : o === "problems" ? "Problems" : "Healthy"}
+                </button>
+              ))}
+            </div>
+            {crops.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                <button type="button" aria-pressed={crop === "all"} onClick={() => setCrop("all")} className={chip(crop === "all")}>
+                  All crops
+                </button>
+                {crops.map((c) => (
+                  <button key={c} type="button" aria-pressed={crop === c} onClick={() => setCrop(c)} className={chip(crop === c)}>
+                    {cropLabel(c)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
 
-      {/* Scan List */}
-      <section className="px-6 space-y-3">
-        {scanHistory.map((scan) => (
-          <Link
-            key={scan.id}
-            href="/crop-doctor/results"
-            className="flex gap-4 p-4 bg-white dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 items-center group card-interactive"
-          >
-            <div
-              className={`size-12 rounded-xl flex items-center justify-center shrink-0 ${
-                scan.diagnosis === "Healthy"
-                  ? "bg-primary/10 text-primary"
-                  : scan.severityColor === "rose"
-                  ? "bg-rose-500/10 text-rose-500"
-                  : scan.severityColor === "amber"
-                  ? "bg-amber-400/10 text-amber-500"
-                  : "bg-blue-400/10 text-blue-500"
-              }`}
-            >
-              <span className="material-symbols-outlined">
-                {scan.diagnosis === "Healthy" ? "check_circle" : "bug_report"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{scan.diagnosis}</p>
-              <p className="text-xs text-slate-500">
-                {scan.crop} • {scan.date}
-              </p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="text-lg font-mono font-bold text-slate-700 dark:text-slate-300">
-                {scan.confidence}%
-              </p>
-              <p
-                className={`text-[10px] font-bold uppercase ${
-                  scan.severity === "None"
-                    ? "text-primary"
-                    : scan.severityColor === "rose"
-                    ? "text-rose-500"
-                    : scan.severityColor === "amber"
-                    ? "text-amber-500"
-                    : "text-blue-500"
-                }`}
-              >
-                {scan.severity === "None" ? "Healthy" : scan.severity}
-              </p>
-            </div>
-          </Link>
-        ))}
-      </section>
+          <section className="px-4 space-y-2">
+            {filtered.map((scan) => (
+              <ScanRow key={scan.id} scan={scan} />
+            ))}
+            {filtered.length === 0 && (
+              <p className="text-center text-sm text-slate-500 py-10">No checks match these filters.</p>
+            )}
+          </section>
+        </>
+      )}
 
       <BottomNav />
     </div>

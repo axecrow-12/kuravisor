@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KuraVisor
 
-## Getting Started
+KuraVisor is an offline first crop doctor and farm assistant for smallholder farmers. It is a mobile focused Next.js web app with an optional Express backend for accounts.
 
-First, run the development server:
+## What the app does
+
+**Crop Doctor.** Take or pick a photo, choose the crop, tick the signs you can see, and get the most likely pest, disease or nutrient problem with first steps and a full treatment plan. Matching runs on the phone against the library in `src/lib/library.ts`, so it works without internet.
+
+**Farm Records.** Add plots, then record expenses, income and harvests per plot. KuraVisor works out profit, profit per hectare, return and cost per kg, shows where the money went, and exports CSV. USD and ZiG are both supported.
+
+**Tasks.** Plan scouting, spraying, weeding and harvests with due dates. Overdue and due tasks show on the home screen and nav badge, and optional daily browser notifications remind you.
+
+**Knowledge Base.** Offline articles for every pest and disease in the library plus practical guides (Pfumvudza, crop rotation, scouting, safe spraying, storage).
+
+**Agro Dealers.** Save the shops you use with phone numbers to call offline, and search for nearby shops on a map when connected.
+
+**Settings.** Text size, light or dark theme, main currency, task reminders, data backup and restore (JSON), CSV export, sign out and delete all data.
+
+## How data is stored
+
+Everything the farmer enters is saved on the device in `localStorage` (see `src/lib/store.ts`). Nothing is uploaded. Farmers can back up to a file and restore it on another phone from Settings.
+
+Accounts can be either:
+
+1. **Online account**, created through the backend (`POST /api/auth/register` and `/api/auth/login`).
+2. **Offline profile**, created on the phone with just a name. No internet needed.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To use online accounts, run the backend (see `backend/`) and point the app at it:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# .env.local
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
 
-## Learn More
+`http://localhost:5000` is also the default when the variable is not set.
 
-To learn more about Next.js, take a look at the following resources:
+## Project layout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Path | Contents |
+| --- | --- |
+| `src/app` | Pages (App Router) |
+| `src/components` | Shared UI: navigation, headers, forms, rows |
+| `src/lib/store.ts` | On device data store and actions |
+| `src/lib/library.ts` | Crops, symptoms, conditions, treatments, guides, tips |
+| `src/lib/farm.ts` | Money and harvest calculations, CSV helpers |
+| `src/lib/api.ts` | Backend client |
+| `backend` | Express and Prisma API for accounts |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Checks
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npx tsc --noEmit
+npm run lint
+npm run build
+```

@@ -4,6 +4,9 @@
 
 @theme {
   --color-primary: #0df20d;
+  /* Readable green for text and icons on light surfaces; swapped for the
+     bright brand green in dark mode below. */
+  --color-brand: #0f7a0f;
   --color-background-light: #f5f8f5;
   --color-background-dark: #102210;
 
@@ -31,9 +34,63 @@
   --shadow-btn-hover: 0 4px 16px rgba(19, 236, 19, 0.45), 0 0 4px rgba(19, 236, 19, 0.2);
 }
 
-body {
-  min-height: max(884px, 100dvh);
+.dark {
+  --color-brand: #3cf53c;
+  color-scheme: dark;
 }
+
+body {
+  min-height: 100dvh;
+}
+
+/* ── Icons ──
+   Material Symbols is bundled from node_modules so icons work offline.
+   The class lives in the base layer so Tailwind text-* utilities can size it
+   (the package's own stylesheet is unlayered and would pin every icon to 24px). */
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url("../../node_modules/material-symbols/material-symbols-outlined.woff2") format("woff2");
+}
+
+@layer base {
+  .material-symbols-outlined {
+    font-family: "Material Symbols Outlined";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "liga";
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+  }
+}
+
+/* ── Bottom sheet entrance ── */
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-sheet { animation: sheet-up 0.25s ease-out; }
+.animate-fade { animation: fade-in 0.2s ease-out; }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* ── Headings use Libre Baskerville ── */
 h1, h2, h3, h4, h5, h6 {
@@ -92,7 +149,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .icon-btn:hover {
   background-color: rgba(19, 236, 19, 0.12);
-  color: #13ec13;
+  color: var(--color-brand);
   box-shadow: 0 0 8px rgba(19, 236, 19, 0.15);
 }
 
@@ -139,5 +196,5 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .fill-1 {
-  font-variation-settings: 'FILL' 1;
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
