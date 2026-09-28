@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Libre_Baskerville, Lato } from "next/font/google";
 import "./globals.css";
+import AppShell, { THEME_BOOT_SCRIPT } from "@/components/AppShell";
 
 const libreBaskerville = Libre_Baskerville({
   subsets: ["latin"],
@@ -20,7 +21,16 @@ export const metadata: Metadata = {
     template: "%s | KuraVisor",
     default: "KuraVisor",
   },
-  description: "KuraVisor - Your Farming Helper",
+  description: "KuraVisor: offline crop doctor and farm records for smallholder farmers",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#102210" },
+  ],
 };
 
 export default function RootLayout({
@@ -29,16 +39,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${libreBaskerville.variable} ${lato.variable}`}>
+    <html
+      lang="en"
+      className={`${libreBaskerville.variable} ${lato.variable}`}
+      suppressHydrationWarning
+    >
       <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body className="bg-slate-100 dark:bg-slate-950 font-display text-slate-900 dark:text-slate-100 antialiased">
-        <div className="max-w-screen-sm mx-auto min-h-screen bg-background-light dark:bg-background-dark shadow-xl">
-          {children}
+        <div className="max-w-screen-sm mx-auto min-h-dvh bg-background-light dark:bg-background-dark shadow-xl">
+          <AppShell>{children}</AppShell>
         </div>
       </body>
     </html>

@@ -1,201 +1,284 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { FormError } from "@/components/AuthLayout";
+import PageHeader from "@/components/PageHeader";
+import { EmptyState, Field, Icon, inputClass } from "@/components/ui";
+import { CATEGORIES, UNITS } from "@/lib/farm";
+import { todayISO } from "@/lib/format";
+import { actions, useAppState, type Currency, type RecordType } from "@/lib/store";
 
-const expenseCategories = [
-  { id: "seeds", label: "Seeds", icon: "grass" },
-  { id: "fertilizer", label: "Fertilizer", icon: "science" },
-  { id: "pesticide", label: "Pesticide", icon: "pest_control" },
-  { id: "labour", label: "Labour", icon: "engineering" },
-  { id: "transport", label: "Transport", icon: "local_shipping" },
-  { id: "equipment", label: "Equipment", icon: "construction" },
-  { id: "land_prep", label: "Land Prep", icon: "agriculture" },
-  { id: "irrigation", label: "Irrigation", icon: "water_drop" },
-  { id: "other", label: "Other", icon: "more_horiz" },
+const TYPES: { value: RecordType; label: string; icon: string; active: string }[] = [
+  { value: "expense", label: "Expense", icon: "arrow_upward", active: "bg-rose-500 text-white" },
+  { value: "income", label: "Income", icon: "arrow_downward", active: "bg-primary text-background-dark" },
+  { value: "harvest", label: "Harvest", icon: "agriculture", active: "bg-amber-500 text-white" },
 ];
 
-const incomeCategories = [
-  { id: "crop_sales", label: "Crop Sales", icon: "sell" },
-  { id: "by_product", label: "By-Product", icon: "recycling" },
-  { id: "subsidies", label: "Subsidies", icon: "account_balance" },
-  { id: "other", label: "Other", icon: "more_horiz" },
-];
+function AddRecordForm() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const { plots, settings } = useAppState();
+  const activePlots = plots.filter((p) => p.status === "active");
+  const selectable = activePlots.length ? activePlots : plots;
 
-export default function AddRecordPage() {
-  const [recordType, setRecordType] = useState<"expense" | "income">("expense");
-  const categories = recordType === "expense" ? expenseCategories : incomeCategories;
+  const initialType = params.get("type");
+  const [type, setType] = useState<RecordType>(
+    initialType === "income" || initialType === "harvest" ? initialType : "expense",
+  );
+  const [plotId, setPlotId] = useState(
+    () => plots.find((p) => p.id === params.get("plot"))?.id ?? selectable[0]?.id ?? "",
+  );
+  const [category, setCategory] = useState(CATEGORIES[type][0].id);
+  const [date, setDate] = useState(todayISO());
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState<Currency>(settings.currency);
+  const [quantity, setQuantity] = useState("");
+  const [unit, setUnit] = useState(UNITS[0]);
+  const [unitPrice, setUnitPrice] = useState("");
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  if (plots.length === 0) {
+    return (
+      <div className="px-4 mt-6">
+        <EmptyState
+          icon="add_location_alt"
+          title="Add a plot first"
+          text="Records belong to a plot so KuraVisor can work out profit for each field."
+          action={{ href: "/farm-records/plots/new", label: "Add a plot", icon: "add" }}
+        />
+      </div>
+    );
+  }
+
+  function changeType(next: RecordType) {
+    setType(next);
+    setCategory(CATEGORIES[next][0].id);
+    setError(null);
+  }
+
+  // Fill the amount from quantity × unit price when the farmer gives both.
+  function updateCalc(q: string, p: string) {
+    const total = Number(q) * Number(p);
+    if (q && p && total > 0) setAmount(String(Math.round(total * 100) / 100));
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const qty = quantity ? Number(quantity) : undefined;
+    const amt = amount ? Number(amount) : undefined;
+    if (!plotId) return setError("Choose a plot.");
+    if (!date) return setError("Choose a date.");
+    if (type === "harvest" && !(qty && qty > 0)) return setError("Enter how much you harvested.");
+    if (type !== "harvest" && !(amt && amt > 0)) return setError("Enter the amount.");
+
+    actions.addRecord({
+      plotId,
+      type,
+      category,
+      amount: type === "harvest" ? undefined : amt,
+      currency,
+      quantity: qty,
+      unit: qty ? unit : undefined,
+      unitPrice: type !== "harvest" && unitPrice ? Number(unitPrice) : undefined,
+      date,
+      notes: notes.trim(),
+    });
+    router.replace(`/farm-records/plots/${plotId}`);
+  }
+
+  const submitStyle = TYPES.find((t) => t.value === type)!.active;
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark pb-8">
-      {/* Header */}
-      <header className="p-4 pt-6 flex items-center justify-between sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/farm-records"
-            className="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/10 icon-btn"
-          >
-            <span className="material-symbols-outlined">arrow_back_ios_new</span>
-          </Link>
-          <h1 className="text-xl font-bold leading-tight">Add Record</h1>
-        </div>
-      </header>
-
-      <div className="px-6 mt-4">
-        {/* Type Toggle */}
-        <div className="bg-white dark:bg-white/5 rounded-xl p-1 flex border border-slate-200 dark:border-white/10 mb-6 card">
+    <form onSubmit={handleSubmit} className="px-4 mt-4 space-y-5">
+      <div className="bg-white dark:bg-white/5 rounded-xl p-1 grid grid-cols-3 gap-1 border border-slate-200 dark:border-white/10 card">
+        {TYPES.map((t) => (
           <button
-            onClick={() => setRecordType("expense")}
-            className={`flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
-              recordType === "expense"
-                ? "bg-rose-500 text-white"
-                : "text-slate-500"
+            key={t.value}
+            type="button"
+            aria-pressed={type === t.value}
+            onClick={() => changeType(t.value)}
+            className={`py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition-colors ${
+              type === t.value ? t.active : "text-slate-500"
             }`}
           >
-            <span className="material-symbols-outlined text-lg">arrow_upward</span>
-            Expense
+            <Icon name={t.icon} className="text-lg" />
+            {t.label}
           </button>
-          <button
-            onClick={() => setRecordType("income")}
-            className={`flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
-              recordType === "income"
-                ? "bg-primary text-background-dark"
-                : "text-slate-500"
-            }`}
+        ))}
+      </div>
+
+      <Field label="Plot" htmlFor="plot">
+        <div className="relative">
+          <select
+            id="plot"
+            value={plotId}
+            onChange={(e) => setPlotId(e.target.value)}
+            className={`${inputClass} appearance-none pr-10`}
           >
-            <span className="material-symbols-outlined text-lg">arrow_downward</span>
-            Income
-          </button>
+            {plots.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.crop}){p.status === "completed" ? " · completed" : ""}
+              </option>
+            ))}
+          </select>
+          <Icon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>
+      </Field>
 
-        {/* Form */}
-        <div className="space-y-5">
-          {/* Plot Selection */}
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Farm Plot
-            </label>
-            <select className="w-full bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 text-sm font-medium appearance-none">
-              <option>Plot A — Main Field (Maize)</option>
-              <option>Plot B — Garden (Tomato)</option>
-              <option>Plot C — Vlei (Groundnut)</option>
-            </select>
-          </div>
+      <Field label={type === "harvest" ? "Grade" : "Category"}>
+        <div className="grid grid-cols-3 gap-2">
+          {CATEGORIES[type].map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              aria-pressed={category === cat.id}
+              onClick={() => setCategory(cat.id)}
+              className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-colors ${
+                category === cat.id
+                  ? "border-primary bg-primary/10 text-brand"
+                  : "border-transparent bg-white dark:bg-white/5 text-slate-500 chip-hover"
+              }`}
+            >
+              <Icon name={cat.icon} className="text-xl" />
+              <span className="text-[11px] font-bold uppercase">{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </Field>
 
-          {/* Category */}
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Category
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  className="flex flex-col items-center gap-1 bg-white dark:bg-white/5 p-3 rounded-xl border-2 border-transparent chip-hover first:border-primary first:bg-primary/5"
-                >
-                  <span className="material-symbols-outlined text-lg text-slate-500">{cat.icon}</span>
-                  <span className="text-[10px] font-bold uppercase">{cat.label}</span>
-                </button>
+      <Field label="Date" htmlFor="date">
+        <input
+          id="date"
+          type="date"
+          value={date}
+          max={todayISO(365)}
+          onChange={(e) => setDate(e.target.value)}
+          className={inputClass}
+        />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label={type === "harvest" ? "Amount harvested" : "Quantity (optional)"} htmlFor="qty">
+          <input
+            id="qty"
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="any"
+            value={quantity}
+            onChange={(e) => {
+              setQuantity(e.target.value);
+              updateCalc(e.target.value, unitPrice);
+            }}
+            placeholder="e.g. 50"
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Unit" htmlFor="unit">
+          <div className="relative">
+            <select
+              id="unit"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              className={`${inputClass} appearance-none pr-10`}
+            >
+              {UNITS.map((u) => (
+                <option key={u}>{u}</option>
               ))}
-            </div>
+            </select>
+            <Icon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
+        </Field>
+      </div>
 
-          {/* Date */}
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Date
-            </label>
-            <div className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 input-glow">
-              <span className="material-symbols-outlined text-slate-400 text-xl">calendar_today</span>
-              <input
-                type="date"
-                defaultValue="2026-03-04"
-                className="bg-transparent flex-1 text-sm font-medium outline-none"
-              />
-            </div>
-          </div>
+      {type !== "harvest" && (
+        <>
+          <Field label="Price per unit (optional)" htmlFor="unit-price">
+            <input
+              id="unit-price"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              value={unitPrice}
+              onChange={(e) => {
+                setUnitPrice(e.target.value);
+                updateCalc(quantity, e.target.value);
+              }}
+              placeholder="0.00"
+              className={inputClass}
+            />
+          </Field>
 
-          {/* Amount + Currency */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-                Amount
-              </label>
-              <div className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 input-glow">
-                <span className="text-slate-400 font-mono font-bold">$</span>
+              <Field label="Total amount" htmlFor="amount">
                 <input
+                  id="amount"
                   type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="any"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="bg-transparent flex-1 text-sm font-mono font-medium outline-none placeholder:text-slate-400"
+                  className={`${inputClass} text-lg font-bold`}
                 />
+              </Field>
+            </div>
+            <Field label="Currency" htmlFor="currency">
+              <div className="relative">
+                <select
+                  id="currency"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value as Currency)}
+                  className={`${inputClass} appearance-none pr-8 font-bold`}
+                >
+                  <option value="USD">USD</option>
+                  <option value="ZiG">ZiG</option>
+                </select>
+                <Icon name="expand_more" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
-            </div>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-                Currency
-              </label>
-              <select className="w-full bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 text-sm font-bold appearance-none">
-                <option>USD</option>
-                <option>ZiG</option>
-              </select>
-            </div>
+            </Field>
           </div>
+        </>
+      )}
 
-          {/* Quantity + Unit Price */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-                Quantity
-              </label>
-              <div className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10">
-                <input
-                  type="number"
-                  placeholder="e.g. 50"
-                  className="bg-transparent flex-1 text-sm font-mono font-medium outline-none placeholder:text-slate-400"
-                />
-                <span className="text-xs text-slate-400">kg</span>
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-                Unit Price
-              </label>
-              <div className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10">
-                <span className="text-slate-400 font-mono text-sm">$</span>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  className="bg-transparent flex-1 text-sm font-mono font-medium outline-none placeholder:text-slate-400"
-                />
-              </div>
-            </div>
-          </div>
+      <Field label="Notes (optional)" htmlFor="notes">
+        <textarea
+          id="notes"
+          rows={3}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder={
+            type === "harvest" ? "e.g. Stored in shed A" : type === "income" ? "e.g. Sold to GMB" : "e.g. AN top dressing"
+          }
+          className={`${inputClass} resize-none`}
+        />
+      </Field>
 
-          {/* Description / Notes */}
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Notes (Optional)
-            </label>
-            <textarea
-              rows={3}
-              placeholder="Add description or notes..."
-              className="w-full bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 text-sm outline-none resize-none placeholder:text-slate-400"
-            />
-          </div>
+      <FormError message={error} />
 
-          {/* Submit Button */}
-          <button
-            className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg mt-2 ${
-              recordType === "expense"
-                ? "bg-rose-500 text-white shadow-rose-500/30"
-                : "bg-primary text-background-dark shadow-primary/30"
-            }`}
-          >
-            <span className="material-symbols-outlined">save</span>
-            Save {recordType === "expense" ? "Expense" : "Income"}
-          </button>
-        </div>
-      </div>
+      <button
+        type="submit"
+        className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg ${submitStyle}`}
+      >
+        <Icon name="save" />
+        Save {TYPES.find((t) => t.value === type)!.label}
+      </button>
+    </form>
+  );
+}
+
+export default function AddRecordPage() {
+  return (
+    <div className="min-h-dvh pb-10">
+      <PageHeader title="Add Record" backHref="/farm-records" />
+      <Suspense>
+        <AddRecordForm />
+      </Suspense>
     </div>
   );
 }

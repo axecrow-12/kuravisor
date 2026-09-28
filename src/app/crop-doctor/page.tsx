@@ -2,349 +2,322 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import PageHeader, { HeaderIconLink } from "@/components/PageHeader";
+import ScanRow from "@/components/ScanRow";
+import { Icon, SectionTitle } from "@/components/ui";
+import { toThumbnail } from "@/lib/image";
+import { CROPS, diagnose, symptomsForCrop } from "@/lib/library";
+import { actions, useAppState } from "@/lib/store";
 
-const pastScans = [
-  {
-    id: "1",
-    date: "28 Feb 2026",
-    crop: "Maize",
-    result: "Healthy",
-    status: "good",
-    summary: "No problems found. Crop looks strong.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCpBZ5yZK3Mk88Dk5tySBx8vc4A1OzDDDC0nyuxHLjmoZwe8ThZn6QnBBQ_P6eu8YqfEe-WRtm3QIkvnGBZDw1MPzaWALoDrDJl_82JHGEssd8wFrZOXs3bKiY7JjChPTSXj-Fz0XcKDRAxaNR8lxvOQL56BugD-7wbwjWNOaGthcL8cY-Nf5SzNAZMoQvhUh_NUPAawsZFPimTCH6F4MY6TXlsd9gYztQKZ_jLbIBiepQCkFgW5QHrWC8oAXYDrFqjGihEG1y6n6tT",
-  },
-  {
-    id: "2",
-    date: "22 Feb 2026",
-    crop: "Maize",
-    result: "Fall Armyworm",
-    status: "bad",
-    summary: "Pest found on leaves. Needs treatment soon.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCpBZ5yZK3Mk88Dk5tySBx8vc4A1OzDDDC0nyuxHLjmoZwe8ThZn6QnBBQ_P6eu8YqfEe-WRtm3QIkvnGBZDw1MPzaWALoDrDJl_82JHGEssd8wFrZOXs3bKiY7JjChPTSXj-Fz0XcKDRAxaNR8lxvOQL56BugD-7wbwjWNOaGthcL8cY-Nf5SzNAZMoQvhUh_NUPAawsZFPimTCH6F4MY6TXlsd9gYztQKZ_jLbIBiepQCkFgW5QHrWC8oAXYDrFqjGihEG1y6n6tT",
-  },
-  {
-    id: "3",
-    date: "15 Feb 2026",
-    crop: "Tomato",
-    result: "Healthy",
-    status: "good",
-    summary: "Plant is growing well. Keep watering.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCpBZ5yZK3Mk88Dk5tySBx8vc4A1OzDDDC0nyuxHLjmoZwe8ThZn6QnBBQ_P6eu8YqfEe-WRtm3QIkvnGBZDw1MPzaWALoDrDJl_82JHGEssd8wFrZOXs3bKiY7JjChPTSXj-Fz0XcKDRAxaNR8lxvOQL56BugD-7wbwjWNOaGthcL8cY-Nf5SzNAZMoQvhUh_NUPAawsZFPimTCH6F4MY6TXlsd9gYztQKZ_jLbIBiepQCkFgW5QHrWC8oAXYDrFqjGihEG1y6n6tT",
-  },
-  {
-    id: "4",
-    date: "10 Feb 2026",
-    crop: "Maize",
-    result: "Leaf Blight",
-    status: "bad",
-    summary: "Fungus on leaves. Spray fungicide.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCpBZ5yZK3Mk88Dk5tySBx8vc4A1OzDDDC0nyuxHLjmoZwe8ThZn6QnBBQ_P6eu8YqfEe-WRtm3QIkvnGBZDw1MPzaWALoDrDJl_82JHGEssd8wFrZOXs3bKiY7JjChPTSXj-Fz0XcKDRAxaNR8lxvOQL56BugD-7wbwjWNOaGthcL8cY-Nf5SzNAZMoQvhUh_NUPAawsZFPimTCH6F4MY6TXlsd9gYztQKZ_jLbIBiepQCkFgW5QHrWC8oAXYDrFqjGihEG1y6n6tT",
-  },
-  {
-    id: "5",
-    date: "02 Feb 2026",
-    crop: "Tomato",
-    result: "Healthy",
-    status: "good",
-    summary: "Everything looks fine. Nice growth.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCpBZ5yZK3Mk88Dk5tySBx8vc4A1OzDDDC0nyuxHLjmoZwe8ThZn6QnBBQ_P6eu8YqfEe-WRtm3QIkvnGBZDw1MPzaWALoDrDJl_82JHGEssd8wFrZOXs3bKiY7JjChPTSXj-Fz0XcKDRAxaNR8lxvOQL56BugD-7wbwjWNOaGthcL8cY-Nf5SzNAZMoQvhUh_NUPAawsZFPimTCH6F4MY6TXlsd9gYztQKZ_jLbIBiepQCkFgW5QHrWC8oAXYDrFqjGihEG1y6n6tT",
-  },
-];
+function StepTitle({ n, title, hint }: { n: number; title: string; hint?: string }) {
+  return (
+    <div className="flex items-start gap-3 mb-3">
+      <span className="size-7 rounded-full bg-primary text-background-dark font-bold text-sm flex items-center justify-center shrink-0">
+        {n}
+      </span>
+      <div>
+        <h2 className="font-bold text-lg leading-tight">{title}</h2>
+        {hint && <p className="text-sm text-slate-500">{hint}</p>}
+      </div>
+    </div>
+  );
+}
 
-export default function CropDoctor() {
+export default function CropDoctorPage() {
+  const router = useRouter();
+  const { scans, plots } = useAppState();
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryRef = useRef<HTMLInputElement | null>(null);
+  const captureRef = useRef<HTMLInputElement | null>(null);
 
-  const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [image, setImage] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [crop, setCrop] = useState<string | null>(null);
+  const [plotId, setPlotId] = useState("");
+  const [picked, setPicked] = useState<string[]>([]);
+
+  const symptoms = useMemo(() => (crop ? symptomsForCrop(crop) : []), [crop]);
+  const cropPlots = useMemo(() => {
+    const label = CROPS.find((c) => c.id === crop)?.label.toLowerCase();
+    return plots.filter((p) => p.status === "active" && p.crop.toLowerCase() === label);
+  }, [plots, crop]);
 
   useEffect(() => {
-    if (cameraOpen && videoRef.current && cameraStream) {
-      videoRef.current.srcObject = cameraStream;
+    if (videoRef.current && cameraStream) videoRef.current.srcObject = cameraStream;
+  }, [cameraStream]);
+
+  // Stop the camera if the farmer leaves the page with it open.
+  useEffect(() => () => cameraStream?.getTracks().forEach((t) => t.stop()), [cameraStream]);
+
+  async function openCamera() {
+    setImageError(null);
+    // getUserMedia needs https (or localhost); fall back to the phone's own camera app.
+    if (!navigator.mediaDevices?.getUserMedia) {
+      captureRef.current?.click();
+      return;
     }
-  }, [cameraOpen, cameraStream]);
-
-  const openCamera = async () => {
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert("Your browser does not support camera access.");
-        return;
-      }
-
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-        },
+        video: { facingMode: "environment" },
         audio: false,
       });
-
       setCameraStream(stream);
-      setCameraOpen(true);
-    } catch (error) {
-      console.error("Camera error:", error);
-      alert("Camera failed to open. Please allow camera permission in your browser.");
+    } catch {
+      captureRef.current?.click();
     }
-  };
+  }
 
-  const closeCamera = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-    }
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-
+  function closeCamera() {
+    cameraStream?.getTracks().forEach((track) => track.stop());
+    if (videoRef.current) videoRef.current.srcObject = null;
     setCameraStream(null);
-    setCameraOpen(false);
-  };
+  }
 
-  const capturePhoto = () => {
+  async function capturePhoto() {
     const video = videoRef.current;
-
-    if (!video) {
-      alert("Camera is not ready yet.");
-      return;
-    }
-
+    if (!video || !video.videoWidth) return;
     const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-
-    const context = canvas.getContext("2d");
-
-    if (!context) {
-      alert("Could not capture image.");
-      return;
-    }
-
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const imageData = canvas.toDataURL("image/png");
-    setCapturedImage(imageData);
-
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
     closeCamera();
-  };
+    setImage(await toThumbnail(canvas.toDataURL("image/jpeg", 0.9)));
+  }
 
-  const openGallery = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleGalleryImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-
+    event.target.value = "";
     if (!file) return;
+    try {
+      setImage(await toThumbnail(file));
+      setImageError(null);
+    } catch (e) {
+      setImageError(e instanceof Error ? e.message : "Could not read that image.");
+    }
+  }
 
-    const reader = new FileReader();
+  function chooseCrop(id: string) {
+    setCrop(id);
+    setPlotId("");
+    // Keep only symptoms that still apply to the new crop.
+    const valid = new Set(symptomsForCrop(id).map((s) => s.id));
+    setPicked((prev) => prev.filter((s) => valid.has(s)));
+  }
 
-    reader.onload = () => {
-      setCapturedImage(reader.result as string);
-    };
+  function toggleSymptom(id: string) {
+    setPicked((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
+  }
 
-    reader.readAsDataURL(file);
-  };
+  function runCheck() {
+    if (!crop) return;
+    const scan = actions.addScan({
+      crop,
+      image: image ?? undefined,
+      symptoms: picked,
+      matches: diagnose(crop, picked),
+      plotId: plotId || undefined,
+    });
+    router.push(`/crop-doctor/results/${scan.id}`);
+  }
 
   return (
-    <div className="min-h-screen pb-28">
-      {/* Header */}
-      <header className="p-6 pt-8 flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex size-12 items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/10"
-        >
-          <span className="material-symbols-outlined text-2xl">arrow_back</span>
-        </Link>
+    <div className="min-h-dvh pb-28">
+      <PageHeader
+        title="Crop Doctor"
+        subtitle="Find out what is wrong with your plants"
+        rightAction={<HeaderIconLink href="/scan-history" icon="history" label="Scan history" />}
+      />
 
-        <div>
-          <h1 className="text-2xl font-extrabold">Crop Doctor</h1>
-          <p className="text-base text-slate-500">Check your plants for sickness</p>
-        </div>
-      </header>
+      <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <input
+        ref={captureRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFile}
+      />
 
-      {/* Take Photo Button */}
-      <section className="px-6 mt-2 mb-8">
-        <button
-          type="button"
-          onClick={openCamera}
-          className="w-full flex items-center gap-5 bg-primary text-background-dark p-6 rounded-2xl btn-glow text-left"
-        >
-          <div className="size-16 bg-white/20 rounded-full flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-4xl">photo_camera</span>
-          </div>
-
-          <div>
-            <p className="text-xl font-extrabold">Take a Photo</p>
-            <p className="text-base opacity-80">Point your camera at the sick leaf</p>
-          </div>
-        </button>
-      </section>
-
-      {/* Upload from Gallery */}
-      <section className="px-6 mb-8">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleGalleryImage}
-        />
-
-        <button
-          type="button"
-          onClick={openGallery}
-          className="w-full flex items-center gap-4 bg-white dark:bg-white/5 p-5 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/20 text-left"
-        >
-          <span className="material-symbols-outlined text-3xl text-slate-400">image</span>
-
-          <div>
-            <p className="text-lg font-bold">Pick from Gallery</p>
-            <p className="text-base text-slate-500">Use a photo you already have</p>
-          </div>
-        </button>
-      </section>
-
-      {/* Captured / Selected Image Preview */}
-      {capturedImage && (
-        <section className="px-6 mb-8">
-          <div className="rounded-2xl bg-white dark:bg-white/5 border border-green-200 dark:border-green-500/20 p-4">
-            <h2 className="text-xl font-extrabold mb-3">Selected Plant Image</h2>
-
-            <img
-              src={capturedImage}
-              alt="Captured plant"
-              className="w-full max-h-80 object-cover rounded-2xl"
-            />
-
-            <div className="mt-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-red-600">error</span>
-                <h3 className="font-extrabold text-red-700 dark:text-red-400">
-                  Demo Diagnosis: Leaf Blight
-                </h3>
-              </div>
-
-              <p className="text-base text-slate-600 dark:text-slate-300">
-                Fungus found on leaves. Spray fungicide and remove infected leaves.
-              </p>
-
-              <Link
-                href="/crop-doctor/results"
-                className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 font-bold text-background-dark"
+      <section className="px-4 mt-5 mb-7">
+        <StepTitle n={1} title="Take a photo" hint="Optional, but it helps you compare later." />
+        {image ? (
+          <div className="relative rounded-2xl overflow-hidden border-2 border-primary/40">
+            <img src={image} alt="Your plant" className="w-full max-h-72 object-cover" />
+            <div className="absolute inset-x-0 bottom-0 p-3 flex gap-2 bg-gradient-to-t from-black/70 to-transparent">
+              <button
+                type="button"
+                onClick={openCamera}
+                className="flex-1 bg-white/90 text-slate-900 font-bold text-sm py-2.5 rounded-xl flex items-center justify-center gap-1.5"
               >
-                View Full Results
-              </Link>
+                <Icon name="photo_camera" className="text-lg" />
+                Retake
+              </button>
+              <button
+                type="button"
+                onClick={() => setImage(null)}
+                aria-label="Remove photo"
+                className="size-10 bg-white/90 text-slate-900 rounded-xl flex items-center justify-center"
+              >
+                <Icon name="delete" className="text-lg" />
+              </button>
             </div>
           </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={openCamera}
+              className="flex flex-col items-center gap-2 bg-primary text-background-dark p-5 rounded-2xl btn-glow"
+            >
+              <Icon name="photo_camera" className="text-4xl" filled />
+              <span className="font-bold">Take Photo</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => galleryRef.current?.click()}
+              className="flex flex-col items-center gap-2 bg-white dark:bg-white/5 p-5 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/20"
+            >
+              <Icon name="image" className="text-4xl text-slate-500" />
+              <span className="font-bold">From Gallery</span>
+            </button>
+          </div>
+        )}
+        {imageError && <p className="text-sm text-rose-600 mt-2">{imageError}</p>}
+      </section>
+
+      <section className="px-4 mb-7">
+        <StepTitle n={2} title="Which crop?" />
+        <div className="grid grid-cols-3 gap-2">
+          {CROPS.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              aria-pressed={crop === c.id}
+              onClick={() => chooseCrop(c.id)}
+              className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-colors ${
+                crop === c.id
+                  ? "border-primary bg-primary/10 text-brand"
+                  : "border-transparent bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 chip-hover"
+              }`}
+            >
+              <Icon name={c.icon} className="text-2xl" />
+              <span className="text-sm font-bold">{c.label}</span>
+            </button>
+          ))}
+        </div>
+        {cropPlots.length > 0 && (
+          <select
+            aria-label="Plot"
+            value={plotId}
+            onChange={(e) => setPlotId(e.target.value)}
+            className="mt-3 w-full bg-white dark:bg-white/5 rounded-xl px-4 py-3 border border-slate-200 dark:border-white/10 text-sm font-medium"
+          >
+            <option value="">Which plot? (optional)</option>
+            {cropPlots.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </section>
+
+      {crop && (
+        <section className="px-4 mb-7 animate-fade">
+          <StepTitle n={3} title="What do you see?" hint="Tick every sign you can see. Leave all blank if the plant looks healthy." />
+          <div className="space-y-2">
+            {symptoms.map((s) => {
+              const on = picked.includes(s.id);
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="checkbox"
+                  aria-checked={on}
+                  onClick={() => toggleSymptom(s.id)}
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-colors ${
+                    on
+                      ? "border-primary bg-primary/10"
+                      : "border-slate-100 dark:border-white/5 bg-white dark:bg-white/5"
+                  }`}
+                >
+                  <span
+                    className={`size-6 rounded-md border-2 flex items-center justify-center shrink-0 ${
+                      on ? "bg-primary border-primary text-background-dark" : "border-slate-300 dark:border-white/20"
+                    }`}
+                  >
+                    {on && <Icon name="check" className="text-base font-bold" />}
+                  </span>
+                  <span className="text-sm font-medium">{s.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={runCheck}
+            className="mt-5 w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-lg btn-glow"
+          >
+            <Icon name={picked.length ? "stethoscope" : "check_circle"} />
+            {picked.length ? `Check ${picked.length} sign${picked.length === 1 ? "" : "s"}` : "Save as healthy"}
+          </button>
         </section>
       )}
 
-      {/* Camera Modal */}
-      {cameraOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-4 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-extrabold">Take Plant Photo</h2>
+      <section className="px-4">
+        <SectionTitle action={scans.length > 3 ? { href: "/scan-history", label: "See all" } : undefined}>
+          Recent checks
+        </SectionTitle>
+        {scans.length === 0 ? (
+          <p className="text-sm text-slate-500 p-4 rounded-2xl border border-dashed border-slate-300 dark:border-white/10">
+            Your checks will appear here so you can follow a problem over time.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {scans.slice(0, 3).map((s) => (
+              <ScanRow key={s.id} scan={s} />
+            ))}
+          </div>
+        )}
+        <Link href="/knowledge-base" className="mt-4 flex items-center gap-2 text-sm font-bold text-brand">
+          <Icon name="menu_book" className="text-lg" />
+          Browse pests and diseases
+        </Link>
+      </section>
 
-              <button
-                type="button"
-                onClick={closeCamera}
-                className="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10"
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full rounded-2xl bg-black"
+      {cameraStream && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black" role="dialog" aria-modal aria-label="Camera">
+          <div className="flex items-center justify-between p-4 text-white">
+            <p className="font-bold">Point at the affected leaf</p>
+            <button
+              type="button"
+              onClick={closeCamera}
+              aria-label="Close camera"
+              className="size-10 flex items-center justify-center rounded-full bg-white/15"
+            >
+              <Icon name="close" />
+            </button>
+          </div>
+          <div className="relative flex-1 flex items-center justify-center overflow-hidden">
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+            <div className="absolute inset-10 border-2 border-primary/70 rounded-3xl pointer-events-none scanner-grid" />
+          </div>
+          <div className="p-6 flex items-center justify-center pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <button
+              type="button"
+              onClick={capturePhoto}
+              aria-label="Capture photo"
+              className="size-18 rounded-full bg-white border-4 border-primary shadow-lg active:scale-95 transition-transform"
             />
-
-            <p className="mt-3 text-center text-sm text-slate-500">
-              Point the camera clearly at the affected leaf.
-            </p>
-
-            <div className="mt-4 flex gap-3">
-              <button
-                type="button"
-                onClick={capturePhoto}
-                className="flex-1 rounded-2xl bg-primary px-4 py-4 font-extrabold text-background-dark"
-              >
-                Capture
-              </button>
-
-              <button
-                type="button"
-                onClick={closeCamera}
-                className="flex-1 rounded-2xl bg-slate-200 dark:bg-white/10 px-4 py-4 font-extrabold"
-              >
-                Cancel
-              </button>
-            </div>
           </div>
         </div>
       )}
-
-      {/* Past Scans */}
-      <section className="px-6">
-        <h2 className="text-xl font-extrabold mb-4">Past Scans</h2>
-
-        <div className="space-y-3">
-          {pastScans.map((scan) => (
-            <Link
-              key={scan.id}
-              href="/crop-doctor/results"
-              className={`flex items-center gap-4 p-4 rounded-2xl border-2 card-interactive ${
-                scan.status === "good"
-                  ? "bg-green-50 dark:bg-green-500/5 border-green-200 dark:border-green-500/20"
-                  : "bg-red-50 dark:bg-red-500/5 border-red-200 dark:border-red-500/20"
-              }`}
-            >
-              <div className="size-14 rounded-xl overflow-hidden shrink-0">
-                <img
-                  alt={scan.crop}
-                  className="w-full h-full object-cover"
-                  src={scan.image}
-                />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span
-                    className={`material-symbols-outlined text-xl ${
-                      scan.status === "good" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {scan.status === "good" ? "check_circle" : "error"}
-                  </span>
-
-                  <p className="text-lg font-bold truncate">{scan.result}</p>
-                </div>
-
-                <p className="text-base text-slate-500 truncate">{scan.summary}</p>
-
-                <p className="text-sm text-slate-400 mt-1">
-                  {scan.crop} &middot; {scan.date}
-                </p>
-              </div>
-
-              <span className="material-symbols-outlined text-slate-400 shrink-0">
-                chevron_right
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       <BottomNav />
     </div>

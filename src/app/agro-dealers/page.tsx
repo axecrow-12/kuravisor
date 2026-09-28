@@ -1,173 +1,231 @@
-import Link from "next/link";
+"use client";
+
+import { useMemo, useState } from "react";
+import { FormError } from "@/components/AuthLayout";
 import BottomNav from "@/components/BottomNav";
-import type { Metadata } from "next";
+import PageHeader from "@/components/PageHeader";
+import { EmptyState, Field, Icon, Sheet, inputClass } from "@/components/ui";
+import { actions, useAppState } from "@/lib/store";
 
-export const metadata: Metadata = {
-  title: "Agro-Dealer Locator",
-};
-
-const dealers = [
-  {
-    id: "1",
-    name: "FarmChem Agro Supplies",
-    address: "Plot 24, Marondera Road, Mashonaland East",
-    distance: "3.2 km",
-    phone: "+263 77 891 2345",
-    products: ["Fertilizers", "Pesticides", "Seeds"],
-    open: true,
-  },
-  {
-    id: "2",
-    name: "Zimbabwe Fertilizer Company",
-    address: "12 Main Street, Marondera",
-    distance: "5.8 km",
-    phone: "+263 71 456 7890",
-    products: ["Compound D", "AN", "Urea"],
-    open: true,
-  },
-  {
-    id: "3",
-    name: "Crop Seed International",
-    address: "Harare-Mutare Highway, Ruwa",
-    distance: "12.4 km",
-    phone: "+263 78 234 5678",
-    products: ["Hybrid Seeds", "Chemicals", "Equipment"],
-    open: false,
-  },
-  {
-    id: "4",
-    name: "Windmill Agro",
-    address: "7 Enterprise Road, Harare",
-    distance: "18.6 km",
-    phone: "+263 77 123 4567",
-    products: ["Full Range"],
-    open: true,
-  },
-  {
-    id: "5",
-    name: "Sable Chemicals",
-    address: "31 Seke Road, Chitungwiza",
-    distance: "22.1 km",
-    phone: "+263 71 987 6543",
-    products: ["AN Fertilizer", "Lime"],
-    open: true,
-  },
-];
+function mapsSearchUrl(query: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
 
 export default function AgroDealersPage() {
+  const { dealers, profile } = useAppState();
+  const [query, setQuery] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
+  const [phone, setPhone] = useState("");
+  const [products, setProducts] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return [...dealers]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter((d) => !q || `${d.name} ${d.location} ${d.products}`.toLowerCase().includes(q));
+  }, [dealers, query]);
+
+  const nearby = profile?.gps
+    ? `https://www.google.com/maps/search/agro+dealer/@${profile.gps.lat},${profile.gps.lng},13z`
+    : mapsSearchUrl(`agro dealer ${profile?.location || "near me"}`);
+
+  function openSheet() {
+    setName("");
+    setLocation(profile?.location ?? "");
+    setPhone("");
+    setProducts("");
+    setError(null);
+    setAdding(true);
+  }
+
+  function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return setError("Enter the shop name.");
+    actions.addDealer({
+      name: name.trim(),
+      location: location.trim(),
+      phone: phone.trim(),
+      products: products.trim(),
+    });
+    setAdding(false);
+  }
+
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark pb-28">
-      {/* Header */}
-      <header className="p-4 pt-6 flex items-center justify-between sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/10 icon-btn"
+    <div className="min-h-dvh pb-28">
+      <PageHeader
+        title="Agro-Dealers"
+        subtitle="Shops for seed, fertilizer and chemicals"
+        backHref="/"
+        rightAction={
+          <button
+            type="button"
+            onClick={openSheet}
+            aria-label="Add a shop"
+            className="size-10 flex items-center justify-center rounded-full bg-primary text-background-dark glow"
           >
-            <span className="material-symbols-outlined">arrow_back_ios_new</span>
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold leading-tight">Agro-Dealers</h1>
-            <p className="text-xs text-slate-500">{dealers.length} shops nearby</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full">
-          <span className="material-symbols-outlined text-sm">cloud_off</span>
-          <span className="text-[10px] font-bold">CACHED</span>
-        </div>
-      </header>
+            <Icon name="add_business" className="text-xl" />
+          </button>
+        }
+      />
 
-      {/* Search Bar */}
-      <section className="px-6 mt-4 mb-4">
-        <div className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl p-3 border border-slate-200 dark:border-white/10 input-glow">
-          <span className="material-symbols-outlined text-slate-400">search</span>
-          <input
-            type="text"
-            placeholder="Search by name or location..."
-            className="bg-transparent flex-1 text-sm outline-none placeholder:text-slate-400"
+      <section className="px-4 mt-4 mb-5">
+        <a
+          href={nearby}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-800 text-white card-interactive relative overflow-hidden"
+        >
+          <div className="absolute inset-0 topo-pattern opacity-60" />
+          <div className="relative size-12 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+            <Icon name="travel_explore" className="text-2xl" />
+          </div>
+          <div className="relative flex-1">
+            <p className="font-bold">Find shops near me</p>
+            <p className="text-xs text-white/80">Opens a map search (needs internet)</p>
+          </div>
+          <Icon name="open_in_new" className="relative text-white/80" />
+        </a>
+      </section>
+
+      <section className="px-4">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">
+          My shops {dealers.length > 0 && `(${dealers.length})`}
+        </h2>
+
+        {dealers.length === 0 ? (
+          <EmptyState
+            icon="storefront"
+            title="Save the shops you use"
+            text="Keep names, phone numbers and what each shop sells, so you can call them even when you're offline."
+            action={{ onClick: openSheet, label: "Add a shop", icon: "add" }}
           />
-        </div>
-      </section>
-
-      {/* Map Placeholder */}
-      <section className="px-6 mb-6">
-        <div className="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl border border-slate-300 dark:border-white/10 relative overflow-hidden card">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <span className="material-symbols-outlined text-4xl text-slate-400">map</span>
-              <p className="text-xs text-slate-400 mt-2">Offline Map — Cached Region</p>
-            </div>
-          </div>
-          {/* Map pins */}
-          <div className="absolute top-8 left-12">
-            <div className="size-6 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30">
-              <span className="material-symbols-outlined text-background-dark text-xs">store</span>
-            </div>
-          </div>
-          <div className="absolute top-16 right-20">
-            <div className="size-6 bg-primary/70 rounded-full flex items-center justify-center">
-              <span className="material-symbols-outlined text-background-dark text-xs">store</span>
-            </div>
-          </div>
-          <div className="absolute bottom-12 left-1/3">
-            <div className="size-6 bg-primary/50 rounded-full flex items-center justify-center">
-              <span className="material-symbols-outlined text-background-dark text-xs">store</span>
-            </div>
-          </div>
-          {/* User location */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="size-4 bg-blue-500 rounded-full border-2 border-white shadow animate-pulse"></div>
-          </div>
-        </div>
-      </section>
-
-      {/* Dealer List */}
-      <section className="px-6 space-y-3">
-        {dealers.map((dealer) => (
-          <div
-            key={dealer.id}
-            className="bg-white dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5 card-interactive"
-          >
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold">{dealer.name}</p>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      dealer.open
-                        ? "bg-primary/10 text-primary"
-                        : "bg-slate-100 dark:bg-white/10 text-slate-500"
-                    }`}
-                  >
-                    {dealer.open ? "OPEN" : "CLOSED"}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1">{dealer.address}</p>
-              </div>
-              <div className="text-right shrink-0 ml-3">
-                <p className="text-sm font-mono font-bold text-primary">{dealer.distance}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-1 mb-3">
-              {dealer.products.map((product) => (
-                <span
-                  key={product}
-                  className="text-[10px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full"
+        ) : (
+          <>
+            {dealers.length > 3 && (
+              <label className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl px-3 py-3 mb-3 border border-slate-200 dark:border-white/10 input-glow">
+                <Icon name="search" className="text-slate-400" />
+                <input
+                  type="search"
+                  placeholder="Search by name, place or product…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="bg-transparent flex-1 text-sm outline-none placeholder:text-slate-400"
+                />
+              </label>
+            )}
+            <div className="space-y-3">
+              {filtered.map((d) => (
+                <div
+                  key={d.id}
+                  className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 card"
                 >
-                  {product}
-                </span>
+                  <div className="flex items-start gap-3">
+                    <div className="size-10 rounded-xl bg-primary/10 text-brand flex items-center justify-center shrink-0">
+                      <Icon name="storefront" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold">{d.name}</p>
+                      {d.location && <p className="text-xs text-slate-500 mt-0.5">{d.location}</p>}
+                      {d.products && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {d.products
+                            .split(",")
+                            .map((p) => p.trim())
+                            .filter(Boolean)
+                            .map((p) => (
+                              <span
+                                key={p}
+                                className="text-[11px] bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full"
+                              >
+                                {p}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => confirm(`Remove ${d.name}?`) && actions.deleteDealer(d.id)}
+                      aria-label={`Remove ${d.name}`}
+                      className="size-8 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 shrink-0"
+                    >
+                      <Icon name="delete" className="text-lg" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    {d.phone ? (
+                      <a
+                        href={`tel:${d.phone.replace(/\s+/g, "")}`}
+                        className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-background-dark text-sm font-bold"
+                      >
+                        <Icon name="call" className="text-lg" />
+                        Call
+                      </a>
+                    ) : (
+                      <span className="flex items-center justify-center py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs text-slate-500">
+                        No phone saved
+                      </span>
+                    )}
+                    <a
+                      href={mapsSearchUrl(`${d.name} ${d.location}`)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 text-sm font-bold"
+                    >
+                      <Icon name="directions" className="text-lg" />
+                      Directions
+                    </a>
+                  </div>
+                </div>
               ))}
+              {filtered.length === 0 && (
+                <p className="text-center text-sm text-slate-500 py-8">No shops match &ldquo;{query}&rdquo;.</p>
+              )}
             </div>
-            <a
-              href={`tel:${dealer.phone}`}
-              className="flex items-center gap-2 text-primary text-xs font-bold"
-            >
-              <span className="material-symbols-outlined text-sm">phone</span>
-              {dealer.phone}
-            </a>
-          </div>
-        ))}
+          </>
+        )}
       </section>
+
+      <Sheet open={adding} onClose={() => setAdding(false)} title="Add a shop">
+        <form onSubmit={save} className="space-y-4">
+          <Field label="Shop name" htmlFor="d-name">
+            <input id="d-name" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Town or address" htmlFor="d-loc">
+            <input id="d-loc" value={location} onChange={(e) => setLocation(e.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Phone" htmlFor="d-phone">
+            <input
+              id="d-phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+263 7X XXX XXXX"
+              className={inputClass}
+            />
+          </Field>
+          <Field label="What they sell" htmlFor="d-products" hint="Separate with commas">
+            <input
+              id="d-products"
+              value={products}
+              onChange={(e) => setProducts(e.target.value)}
+              placeholder="Seed, Compound D, AN, pesticides"
+              className={inputClass}
+            />
+          </Field>
+          <FormError message={error} />
+          <button
+            type="submit"
+            className="w-full py-4 rounded-xl bg-primary text-background-dark font-bold flex items-center justify-center gap-2 btn-glow"
+          >
+            <Icon name="save" />
+            Save shop
+          </button>
+        </form>
+      </Sheet>
 
       <BottomNav />
     </div>

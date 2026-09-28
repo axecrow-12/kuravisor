@@ -1,114 +1,209 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import AuthLayout, { FormError } from "@/components/AuthLayout";
+import { Field, Icon, Segmented, inputClass } from "@/components/ui";
+import { ApiError, register } from "@/lib/api";
+import { actions, type Language } from "@/lib/store";
+
+type Mode = "cloud" | "local";
+
+const LANGUAGES: { value: Language; label: string }[] = [
+  { value: "en", label: "English" },
+  { value: "sn", label: "Shona" },
+  { value: "nd", label: "Ndebele" },
+];
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
-      {/* Top Branding */}
-      <div className="px-6 pt-12 pb-6 flex flex-col items-center">
-        <div className="size-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/40 glow">
-          <span className="material-symbols-outlined text-primary text-3xl">person_add</span>
-        </div>
-        <h1 className="text-2xl font-bold mb-1">Create Account</h1>
-        <p className="text-xs text-slate-500 text-center">
-          Register offline — sync when connected
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
+  const params = useSearchParams();
+  const [mode, setMode] = useState<Mode>(params.has("offline") ? "local" : "cloud");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [language, setLanguage] = useState<Language>("en");
+  const [error, setError] = useState<string | null>(null);
+  const [unreachable, setUnreachable] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  function finish(extra: { accountType: Mode; email?: string; userId?: string; token?: string }) {
+    actions.updateSettings({ language });
+    actions.signIn({ name: name.trim(), phone: phone.trim(), location: location.trim(), ...extra });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setUnreachable(false);
+
+    if (!name.trim()) return setError("Please enter your name.");
+    if (mode === "local") return finish({ accountType: "local" });
+
+    if (password.length < 6) return setError("Password must be at least 6 characters.");
+    if (password !== confirm) return setError("Passwords do not match.");
+
+    setBusy(true);
+    try {
+      const { token, user } = await register(name.trim(), email.trim(), password);
+      finish({ accountType: "cloud", email: user.email, userId: user.id, token });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed.");
+      setUnreachable(err instanceof ApiError && err.status === 0);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <AuthLayout
+      icon="person_add"
+      title="Create Account"
+      subtitle="Set up KuraVisor on this phone. Your farm records are saved on the device."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Segmented<Mode>
+          value={mode}
+          onChange={(m) => {
+            setMode(m);
+            setError(null);
+          }}
+          options={[
+            { value: "cloud", label: "Online account" },
+            { value: "local", label: "Offline only" },
+          ]}
+        />
+        <p className="text-xs text-slate-500 -mt-1">
+          {mode === "cloud"
+            ? "Needs internet once to register. Lets you sign in on other devices later."
+            : "No email or internet needed. You can create an online account later."}
         </p>
-      </div>
 
-      {/* Registration Form */}
-      <div className="flex-1 bg-white dark:bg-white/5 rounded-t-3xl px-6 pt-8 pb-10 border-t border-primary/10 card">
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Full Name
-            </label>
-            <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 input-glow">
-              <span className="material-symbols-outlined text-slate-400 text-xl">person</span>
+        <Field label="Full name" htmlFor="name">
+          <input
+            id="name"
+            autoComplete="name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your name"
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Phone number (optional)" htmlFor="phone">
+          <input
+            id="phone"
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+263 7X XXX XXXX"
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Farm location (optional)" htmlFor="location">
+          <input
+            id="location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="e.g. Marondera, Mashonaland East"
+            className={inputClass}
+          />
+        </Field>
+
+        {mode === "cloud" && (
+          <>
+            <Field label="Email" htmlFor="email">
               <input
-                type="text"
-                placeholder="Enter your name"
-                className="bg-transparent flex-1 text-sm font-medium outline-none placeholder:text-slate-400"
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className={inputClass}
               />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Password" htmlFor="password">
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="6+ characters"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Confirm" htmlFor="confirm">
+                <input
+                  id="confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  placeholder="Repeat it"
+                  className={inputClass}
+                />
+              </Field>
             </div>
-          </div>
+          </>
+        )}
 
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Phone Number
-            </label>
-            <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10 input-glow">
-              <span className="material-symbols-outlined text-slate-400 text-xl">phone</span>
-              <input
-                type="tel"
-                placeholder="+263 7X XXX XXXX"
-                className="bg-transparent flex-1 text-sm font-medium outline-none placeholder:text-slate-400"
-              />
-            </div>
-          </div>
+        <Field label="Language / Mutauro / Ulimi">
+          <Segmented value={language} onChange={setLanguage} options={LANGUAGES} />
+        </Field>
 
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Create PIN (4–6 digits)
-            </label>
-            <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10">
-              <span className="material-symbols-outlined text-slate-400 text-xl">lock</span>
-              <input
-                type="password"
-                maxLength={6}
-                placeholder="Create your PIN"
-                className="bg-transparent flex-1 text-sm font-medium outline-none placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Confirm PIN
-            </label>
-            <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 rounded-xl p-4 border border-slate-200 dark:border-white/10">
-              <span className="material-symbols-outlined text-slate-400 text-xl">lock</span>
-              <input
-                type="password"
-                maxLength={6}
-                placeholder="Confirm your PIN"
-                className="bg-transparent flex-1 text-sm font-medium outline-none placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">
-              Language / Mutauro / Ulimi
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <button className="py-3 rounded-xl bg-primary text-background-dark font-bold text-sm border-2 border-primary btn-glow">
-                English
-              </button>
-              <button className="py-3 rounded-xl bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold text-sm border-2 border-transparent chip-hover">
-                Shona
-              </button>
-              <button className="py-3 rounded-xl bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold text-sm border-2 border-transparent chip-hover">
-                Ndebele
-              </button>
-            </div>
-          </div>
-
-          <button className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow mt-2">
-            <span className="material-symbols-outlined">how_to_reg</span>
-            Create Account
+        <FormError message={error} />
+        {unreachable && (
+          <button
+            type="button"
+            onClick={() => {
+              setMode("local");
+              setError(null);
+              setUnreachable(false);
+            }}
+            className="w-full bg-slate-100 dark:bg-white/10 font-bold py-3 rounded-xl flex items-center justify-center gap-2"
+          >
+            <Icon name="cloud_off" />
+            Continue offline instead
           </button>
-        </div>
+        )}
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-slate-500">
-            Already registered?{" "}
-            <Link href="/login" className="text-primary font-bold">
-              Sign In
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-60"
+        >
+          <Icon name={busy ? "progress_activity" : "how_to_reg"} className={busy ? "animate-spin" : ""} />
+          {busy ? "Creating account…" : mode === "cloud" ? "Create Account" : "Start Using KuraVisor"}
+        </button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-slate-500">
+        Already registered?{" "}
+        <Link href="/login" className="text-brand font-bold">
+          Sign in
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }
