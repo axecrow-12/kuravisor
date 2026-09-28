@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId } from "react";
+import { useT } from "@/lib/i18n";
 
 export function Icon({
   name,
@@ -118,6 +119,7 @@ export function Sheet({
   children: React.ReactNode;
 }) {
   const titleId = useId();
+  const { t } = useT();
 
   useEffect(() => {
     if (!open) return;
@@ -144,7 +146,7 @@ export function Sheet({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("common.close")}
             className="size-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 icon-btn"
           >
             <Icon name="close" className="text-xl" />
@@ -228,5 +230,20 @@ export function Card({
     >
       {children}
     </div>
+  );
+}
+
+/**
+ * Crop health guidance (symptoms, treatments, guides) is only in English
+ * until it has been translated and checked by a native speaking agronomist.
+ */
+export function EnglishOnlyNote({ className = "mb-3" }: { className?: string }) {
+  const { t, lang } = useT();
+  if (lang === "en") return null;
+  return (
+    <p className={`flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-3 ${className}`}>
+      <Icon name="translate" className="text-base text-amber-600" />
+      {t("common.englishOnly")}
+    </p>
   );
 }

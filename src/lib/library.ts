@@ -19,10 +19,6 @@ export const CROPS: Crop[] = [
   { id: "cabbage", label: "Cabbage", icon: "psychiatry" },
 ];
 
-export function cropLabel(id: string): string {
-  return CROPS.find((c) => c.id === id)?.label ?? id;
-}
-
 export interface Symptom {
   id: string;
   label: string;
@@ -495,18 +491,6 @@ export const CONDITIONS: Condition[] = [
 export function getCondition(id: string): Condition | undefined {
   return CONDITIONS.find((c) => c.id === id);
 }
-
-export const CONDITION_TYPE_LABEL: Record<ConditionType, string> = {
-  pest: "Pest",
-  disease: "Disease",
-  nutrient: "Nutrient problem",
-};
-
-export const SEVERITY_LABEL: Record<Severity, string> = {
-  low: "Mild",
-  medium: "Moderate",
-  high: "Serious",
-};
 
 /** Symptoms worth asking about for a crop (those used by its conditions). */
 export function symptomsForCrop(cropId: string): Symptom[] {

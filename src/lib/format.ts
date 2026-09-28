@@ -1,4 +1,31 @@
-import type { Currency } from "./store";
+import type { MessageKey } from "@/locales/en";
+import type { Currency, Language } from "./store";
+
+type T = (key: MessageKey, vars?: Record<string, string | number>) => string;
+
+/*
+ * Month and weekday names are spelled out here because many phone browsers
+ * ship without Shona (sn) or Northern Ndebele (nd) locale data for Intl.
+ */
+const MONTHS: Record<Language, string[]> = {
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  sn: ["Ndira", "Kukadzi", "Kurume", "Kubvumbi", "Chivabvu", "Chikumi", "Chikunguru", "Nyamavhuvhu", "Gunyana", "Gumiguru", "Mbudzi", "Zvita"],
+  nd: ["Zibandlela", "Nhlolanja", "Mbimbitho", "Mabasa", "Nkwenkwezi", "Nhlangula", "Ntulikazi", "Ncwabakazi", "Mpandula", "Mfumfu", "Lwezi", "Mpalakazi"],
+};
+
+const WEEKDAYS: Record<Language, string[]> = {
+  en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+  sn: ["Svondo", "Muvhuro", "Chipiri", "Chitatu", "China", "Chishanu", "Mugovera"],
+  nd: ["Sonto", "Mvulo", "Sibili", "Sithathu", "Sine", "Sihlanu", "Mgqibelo"],
+};
+
+const SHORT_MONTHS: Record<Language, string[]> = {
+  en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  sn: ["Ndi", "Kuk", "Kur", "Kub", "Chv", "Chk", "Chg", "Nya", "Gun", "Gum", "Mbu", "Zvi"],
+  nd: ["Zib", "Nhlo", "Mbi", "Mab", "Nkw", "Nhla", "Ntu", "Ncw", "Mpan", "Mfu", "Lwe", "Mpal"],
+};
+
+const shortMonth = (lang: Language, m: number) => SHORT_MONTHS[lang][m];
 
 /** Today's date as YYYY-MM-DD in the device's local time zone. */
 export function todayISO(offsetDays = 0): string {
@@ -15,20 +42,25 @@ function parseISODate(iso: string): Date {
 }
 
 /** "04 Mar 2026" */
-export function formatDate(iso: string): string {
-  return parseISODate(iso.slice(0, 10)).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+export function formatDate(iso: string, lang: Language = "en"): string {
+  const d = parseISODate(iso.slice(0, 10));
+  return `${String(d.getDate()).padStart(2, "0")} ${shortMonth(lang, d.getMonth())} ${d.getFullYear()}`;
 }
 
 /** "04 Mar" */
-export function formatShortDate(iso: string): string {
-  return parseISODate(iso.slice(0, 10)).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-  });
+export function formatShortDate(iso: string, lang: Language = "en"): string {
+  const d = parseISODate(iso.slice(0, 10));
+  return `${String(d.getDate()).padStart(2, "0")} ${shortMonth(lang, d.getMonth())}`;
+}
+
+/** "Sunday 27 September" */
+export function longDate(d: Date, lang: Language = "en"): string {
+  return `${WEEKDAYS[lang][d.getDay()]} ${d.getDate()} ${MONTHS[lang][d.getMonth()]}`;
+}
+
+/** "September 2026" */
+export function monthYear(d: Date, lang: Language = "en"): string {
+  return `${MONTHS[lang][d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /** Whole days from today to the given date (negative = in the past). */
@@ -37,27 +69,27 @@ export function daysFromToday(iso: string): number {
   return Math.round(ms / 86_400_000);
 }
 
-export function relativeDay(iso: string): string {
+export function relativeDay(iso: string, lang: Language, t: T): string {
   const n = daysFromToday(iso);
-  if (n === 0) return "Today";
-  if (n === 1) return "Tomorrow";
-  if (n === -1) return "Yesterday";
-  if (n < 0) return `${-n} days ago`;
-  if (n < 7) return `In ${n} days`;
-  return formatShortDate(iso);
+  if (n === 0) return t("time.today");
+  if (n === 1) return t("time.tomorrow");
+  if (n === -1) return t("time.yesterday");
+  if (n < 0) return t("time.daysAgo", { count: -n });
+  if (n < 7) return t("time.inDays", { count: n });
+  return formatShortDate(iso, lang);
 }
 
 /** Relative time for timestamps: "just now", "3 h ago", "2 days ago". */
-export function timeAgo(isoTimestamp: string): string {
+export function timeAgo(isoTimestamp: string, lang: Language, t: T): string {
   const diff = Date.now() - new Date(isoTimestamp).getTime();
   const min = Math.floor(diff / 60_000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min} min ago`;
+  if (min < 1) return t("time.justNow");
+  if (min < 60) return t("time.minAgo", { count: min });
   const h = Math.floor(min / 60);
-  if (h < 24) return `${h} h ago`;
+  if (h < 24) return t("time.hoursAgo", { count: h });
   const d = Math.floor(h / 24);
-  if (d < 30) return `${d} day${d === 1 ? "" : "s"} ago`;
-  return formatDate(isoTimestamp);
+  if (d < 30) return t("time.daysAgo", { count: d });
+  return formatDate(isoTimestamp, lang);
 }
 
 export function formatMoney(amount: number, currency: Currency, signed = false): string {
@@ -73,11 +105,11 @@ export function formatNumber(n: number, digits = 1): string {
   return n.toLocaleString("en-US", { maximumFractionDigits: digits });
 }
 
-export function greeting(): string {
+export function greetingKey(): MessageKey {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "home.goodMorning";
+  if (h < 17) return "home.goodAfternoon";
+  return "home.goodEvening";
 }
 
 export function initials(name: string): string {

@@ -7,6 +7,7 @@ import PageHeader from "@/components/PageHeader";
 import { Icon, Segmented, Toggle } from "@/components/ui";
 import { categoryFor, downloadFile, toCSV } from "@/lib/farm";
 import { initials, todayISO } from "@/lib/format";
+import { LANGUAGE_OPTIONS, useT } from "@/lib/i18n";
 import {
   actions,
   getState,
@@ -73,6 +74,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 export default function SettingsPage() {
   const { profile, settings, plots, records, scans, tasks, dealers } = useAppState();
+  const { t, category, unit } = useT();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -84,9 +86,9 @@ export default function SettingsPage() {
   async function setNotifications(on: boolean) {
     if (on && typeof Notification !== "undefined" && Notification.permission !== "granted") {
       const result = await Notification.requestPermission();
-      if (result !== "granted") return flash("Notifications are blocked in your browser settings.");
+      if (result !== "granted") return flash(t("settings.notifyBlocked"));
     }
-    if (on && typeof Notification === "undefined") return flash("This browser does not support notifications.");
+    if (on && typeof Notification === "undefined") return flash(t("settings.notifyUnsupported"));
     actions.updateSettings({ notifications: on });
   }
 
@@ -109,14 +111,14 @@ export default function SettingsPage() {
         date: r.date,
         plot: plotName(r.plotId),
         type: r.type,
-        category: categoryFor(r.type, r.category).label,
+        category: category(r.category, categoryFor(r.type, r.category).label),
         amount: r.amount ?? "",
         currency: r.type === "harvest" ? "" : r.currency,
         quantity: r.quantity ?? "",
-        unit: r.unit ?? "",
+        unit: r.unit ? unit(r.unit) : "",
         notes: r.notes,
       }));
-    if (!rows.length) return flash("No farm records to export yet.");
+    if (!rows.length) return flash(t("settings.noRecordsToExport"));
     downloadFile(`kuravisor-records-${todayISO()}.csv`, toCSV(rows), "text/csv");
   }
 
@@ -126,16 +128,16 @@ export default function SettingsPage() {
     if (!file) return;
     try {
       const data = JSON.parse(await file.text());
-      if (!confirm("Replace the data on this phone with this backup?")) return;
-      if (!actions.importBackup(data)) return flash("Not enough storage space to restore this backup.");
-      flash("Backup restored.");
+      if (!confirm(t("settings.confirmRestore"))) return;
+      if (!actions.importBackup(data)) return flash(t("settings.restoreNoSpace"));
+      flash(t("settings.restored"));
     } catch {
-      flash("That file is not a KuraVisor backup.");
+      flash(t("settings.notBackup"));
     }
   }
 
   function deleteAll() {
-    if (!confirm("Delete ALL KuraVisor data on this phone, including plots, records, scans and tasks? This cannot be undone.")) return;
+    if (!confirm(t("settings.confirmDeleteAll"))) return;
     actions.resetAll();
   }
 
@@ -143,7 +145,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-dvh pb-28">
-      <PageHeader title="Settings" backHref="/profile" />
+      <PageHeader title={t("settings.title")} backHref="/profile" />
 
       <div className="px-4 mt-4 space-y-6">
         <Link
@@ -156,21 +158,27 @@ export default function SettingsPage() {
           <div className="flex-1 min-w-0">
             <p className="font-bold truncate">{profile.name}</p>
             <p className="text-xs text-slate-500 truncate">
-              {profile.accountType === "cloud" ? profile.email : "Offline profile on this phone"}
+              {profile.accountType === "cloud" ? profile.email : t("settings.offlineProfile")}
             </p>
           </div>
           <Icon name="chevron_right" className="text-slate-400" />
         </Link>
 
-        <Group title="Your data">
+        <Group title={t("settings.yourData")}>
           <Row
             icon="smartphone"
-            title="Stored on this phone"
-            subtitle={`${plots.length} plots · ${records.length} records · ${scans.length} checks · ${tasks.length} tasks · ${dealers.length} shops`}
+            title={t("settings.storedOnPhone")}
+            subtitle={t("settings.storedCounts", {
+              plots: plots.length,
+              records: records.length,
+              scans: scans.length,
+              tasks: tasks.length,
+              dealers: dealers.length,
+            })}
           />
-          <Row icon="download" title="Back up data" subtitle="Save a backup file you can restore later" onClick={exportBackup} />
-          <Row icon="upload" title="Restore from backup" subtitle="Load a KuraVisor backup file" onClick={() => fileRef.current?.click()} />
-          <Row icon="table_view" title="Export records (CSV)" subtitle="Open in Excel or Google Sheets" onClick={exportCSV} />
+          <Row icon="download" title={t("settings.backup")} subtitle={t("settings.backupHint")} onClick={exportBackup} />
+          <Row icon="upload" title={t("settings.restore")} subtitle={t("settings.restoreHint")} onClick={() => fileRef.current?.click()} />
+          <Row icon="table_view" title={t("settings.exportCsv")} subtitle={t("settings.exportCsvHint")} onClick={exportCSV} />
         </Group>
         <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={importBackup} />
 
@@ -181,72 +189,63 @@ export default function SettingsPage() {
           <Segmented<Language>
             value={settings.language}
             onChange={(language) => actions.updateSettings({ language })}
-            options={[
-              { value: "en", label: "English" },
-              { value: "sn", label: "Shona" },
-              { value: "nd", label: "Ndebele" },
-            ]}
+            options={LANGUAGE_OPTIONS}
           />
-          {settings.language !== "en" && (
-            <p className="text-xs text-slate-500 mt-2">
-              Shona and Ndebele translations are on the way. The app shows English until they are ready.
-            </p>
-          )}
         </section>
 
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">Text size</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">{t("settings.textSize")}</h2>
           <Segmented<FontSize>
             value={settings.fontSize}
             onChange={(fontSize) => actions.updateSettings({ fontSize })}
             options={[
-              { value: "sm", label: "Small", className: "text-xs" },
-              { value: "md", label: "Medium" },
-              { value: "lg", label: "Large", className: "text-base" },
+              { value: "sm", label: t("settings.small"), className: "text-xs" },
+              { value: "md", label: t("settings.medium") },
+              { value: "lg", label: t("settings.large"), className: "text-base" },
             ]}
           />
         </section>
 
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">Appearance</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">{t("settings.appearance")}</h2>
           <Segmented<Theme>
             value={settings.theme}
             onChange={(theme) => actions.updateSettings({ theme })}
             options={[
-              { value: "system", label: "Auto" },
-              { value: "light", label: "Light" },
-              { value: "dark", label: "Dark" },
+              { value: "system", label: t("settings.auto") },
+              { value: "light", label: t("settings.light") },
+              { value: "dark", label: t("settings.dark") },
             ]}
           />
         </section>
 
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">Main currency</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">{t("settings.currency")}</h2>
           <Segmented<Currency>
             value={settings.currency}
             onChange={(currency) => actions.updateSettings({ currency })}
             options={[
-              { value: "USD", label: "US Dollar" },
+              { value: "USD", label: t("settings.usd") },
               { value: "ZiG", label: "ZiG" },
             ]}
           />
         </section>
 
-        <Group title="App">
+        <Group title={t("settings.app")}>
           <Row
             icon="notifications"
-            title="Task reminders"
-            subtitle="A daily notification when tasks are due"
-            right={<Toggle checked={settings.notifications} onChange={setNotifications} label="Task reminders" />}
+            title={t("settings.reminders")}
+            subtitle={t("settings.remindersHint")}
+            right={<Toggle checked={settings.notifications} onChange={setNotifications} label={t("settings.reminders")} />}
           />
-          <Row icon="menu_book" title="Knowledge Base" href="/knowledge-base" />
-          <Row icon="storefront" title="Agro-Dealers" href="/agro-dealers" />
-          <Row icon="history" title="Scan History" href="/scan-history" />
+          <Row icon="menu_book" title={t("kb.title")} href="/knowledge-base" />
+          <Row icon="storefront" title={t("dealers.title")} href="/agro-dealers" />
+          <Row icon="history" title={t("history.title")} href="/scan-history" />
         </Group>
 
-        <Group title="Account">
-          <Row icon="logout" title="Sign out" subtitle="Your farm data stays on this phone" onClick={() => actions.signOut()} />
-          <Row icon="delete_forever" title="Delete all data" subtitle="Remove everything from this phone" onClick={deleteAll} danger />
+        <Group title={t("settings.account")}>
+          <Row icon="logout" title={t("settings.signOut")} subtitle={t("settings.signOutHint")} onClick={() => actions.signOut()} />
+          <Row icon="delete_forever" title={t("settings.deleteAll")} subtitle={t("settings.deleteAllHint")} onClick={deleteAll} danger />
         </Group>
 
         <div className="text-center pb-4">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { currentSeason } from "@/lib/farm";
+import { useT } from "@/lib/i18n";
 import { CROPS } from "@/lib/library";
 import type { Plot } from "@/lib/store";
 import { FormError } from "./AuthLayout";
@@ -18,40 +19,41 @@ export default function PlotForm({
   submitLabel: string;
   onSubmit: (plot: PlotInput) => void;
 }) {
+  const { t, lang, crop: cropName } = useT();
   const [name, setName] = useState(initial?.name ?? "");
   const [crop, setCrop] = useState(initial?.crop ?? "");
   const [size, setSize] = useState(initial ? String(initial.sizeHa) : "");
-  const [season, setSeason] = useState(initial?.season ?? currentSeason());
+  const [season, setSeason] = useState(initial?.season ?? currentSeason(lang));
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const sizeHa = Number(size);
-    if (!name.trim()) return setError("Give the plot a name.");
-    if (!crop.trim()) return setError("Choose or type the crop.");
-    if (!(sizeHa > 0)) return setError("Enter the plot size in hectares.");
+    if (!name.trim()) return setError(t("plotForm.errName"));
+    if (!crop.trim()) return setError(t("plotForm.errCrop"));
+    if (!(sizeHa > 0)) return setError(t("plotForm.errSize"));
     onSubmit({
       name: name.trim(),
       crop: crop.trim(),
       sizeHa,
-      season: season.trim() || currentSeason(),
+      season: season.trim() || currentSeason(lang),
       status: initial?.status ?? "active",
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <Field label="Plot name" htmlFor="plot-name">
+      <Field label={t("plotForm.name")} htmlFor="plot-name">
         <input
           id="plot-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Main field, Garden by the river"
+          placeholder={t("plotForm.namePlaceholder")}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Crop">
+      <Field label={t("plotForm.crop")}>
         <div className="grid grid-cols-3 gap-2 mb-2">
           {CROPS.map((c) => (
             <button
@@ -66,21 +68,21 @@ export default function PlotForm({
               }`}
             >
               <Icon name={c.icon} className="text-xl" />
-              <span className="text-xs font-bold">{c.label}</span>
+              <span className="text-xs font-bold">{cropName(c.id)}</span>
             </button>
           ))}
         </div>
         <input
-          aria-label="Other crop"
+          aria-label={t("plotForm.otherCrop")}
           value={CROPS.some((c) => c.label === crop) ? "" : crop}
           onChange={(e) => setCrop(e.target.value)}
-          placeholder="Other crop (type it here)"
+          placeholder={t("plotForm.otherCropPlaceholder")}
           className={inputClass}
         />
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Size (hectares)" htmlFor="plot-size" hint="1 acre ≈ 0.4 ha">
+        <Field label={t("plotForm.size")} htmlFor="plot-size" hint={t("plotForm.sizeHint")}>
           <input
             id="plot-size"
             type="number"
@@ -93,7 +95,7 @@ export default function PlotForm({
             className={inputClass}
           />
         </Field>
-        <Field label="Season" htmlFor="plot-season">
+        <Field label={t("plotForm.season")} htmlFor="plot-season">
           <input
             id="plot-season"
             value={season}

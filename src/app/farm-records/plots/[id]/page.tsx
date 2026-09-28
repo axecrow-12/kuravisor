@@ -19,12 +19,14 @@ import {
   toCSV,
 } from "@/lib/farm";
 import { formatMoney, formatNumber } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import { actions, useAppState } from "@/lib/store";
 
 export default function PlotPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { plots, records: allRecords, settings } = useAppState();
+  const { t, crop, category, unit } = useT();
   const currency = settings.currency;
   const plot = plots.find((p) => p.id === id);
   const [editing, setEditing] = useState(false);
@@ -40,13 +42,13 @@ export default function PlotPage() {
   if (!plot) {
     return (
       <div className="min-h-dvh pb-28">
-        <PageHeader title="Plot" backHref="/farm-records" />
+        <PageHeader title={t("plot.title")} backHref="/farm-records" />
         <div className="px-4 mt-6">
           <EmptyState
             icon="search_off"
-            title="Plot not found"
-            text="It may have been deleted."
-            action={{ href: "/farm-records", label: "Back to Farm Records" }}
+            title={t("plot.notFound")}
+            text={t("common.mayBeDeleted")}
+            action={{ href: "/farm-records", label: t("plot.backToFarm") }}
           />
         </div>
         <BottomNav />
@@ -64,20 +66,20 @@ export default function PlotPage() {
     const rows = records.map((r) => ({
       date: r.date,
       type: r.type,
-      category: categoryFor(r.type, r.category).label,
+      category: category(r.category, categoryFor(r.type, r.category).label),
       amount: r.amount ?? "",
       currency: r.type === "harvest" ? "" : r.currency,
       quantity: r.quantity ?? "",
-      unit: r.unit ?? "",
+      unit: r.unit ? unit(r.unit) : "",
       unit_price: r.unitPrice ?? "",
       notes: r.notes,
     }));
     const safeName = plot!.name.replace(/[^\w]+/g, "-").toLowerCase();
-    downloadFile(`kuravisor-${safeName}.csv`, toCSV(rows) || "no records", "text/csv");
+    downloadFile(`kuravisor-${safeName}.csv`, toCSV(rows) || t("plot.noRecordsCsv"), "text/csv");
   }
 
   function deletePlot() {
-    if (!confirm(`Delete "${plot!.name}" and all ${records.length} of its records? This cannot be undone.`)) return;
+    if (!confirm(t("plot.confirmDelete", { name: plot!.name, count: records.length }))) return;
     actions.deletePlot(plot!.id);
     router.replace("/farm-records");
   }
@@ -86,13 +88,13 @@ export default function PlotPage() {
     <div className="min-h-dvh pb-28">
       <PageHeader
         title={plot.name}
-        subtitle={`${plot.crop} · ${formatNumber(plot.sizeHa, 2)} ha · ${plot.season}`}
+        subtitle={`${crop(plot.crop)} · ${formatNumber(plot.sizeHa, 2)} ha · ${plot.season}`}
         backHref="/farm-records"
         rightAction={
           <button
             type="button"
             onClick={() => setEditing(true)}
-            aria-label="Edit plot"
+            aria-label={t("plot.edit")}
             className="size-10 flex items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 icon-btn"
           >
             <Icon name="edit" className="text-xl" />
@@ -108,35 +110,35 @@ export default function PlotPage() {
         >
           <Icon name="agriculture" className="absolute top-2 right-3 text-7xl opacity-15" />
           <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">
-            {plot.status === "completed" ? "Final profit" : "Profit so far"}
+            {plot.status === "completed" ? t("plot.finalProfit") : t("plot.profitSoFar")}
           </p>
           <p className="text-4xl font-bold">
             <Money totals={totals.profit} currency={currency} subClassName="text-sm opacity-70" />
           </p>
           <div className="flex gap-6 mt-4 relative">
             <div>
-              <p className="text-[10px] font-bold uppercase opacity-60">Per hectare</p>
+              <p className="text-[10px] font-bold uppercase opacity-60">{t("plot.perHectare")}</p>
               <p className="font-bold">{formatMoney(Math.round(perHa), currency)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase opacity-60">Return</p>
+              <p className="text-[10px] font-bold uppercase opacity-60">{t("plot.return")}</p>
               <p className="font-bold">{roi === null ? "–" : `${Math.round(roi)}%`}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase opacity-60">Cost / kg</p>
+              <p className="text-[10px] font-bold uppercase opacity-60">{t("plot.costPerKg")}</p>
               <p className="font-bold">{costPerKg === null ? "–" : formatMoney(costPerKg, currency)}</p>
             </div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Total spent</p>
+            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("plot.totalSpent")}</p>
             <p className="text-xl font-bold text-rose-600 dark:text-rose-400">
               <Money totals={totals.expenses} currency={currency} />
             </p>
           </div>
           <div className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Total earned</p>
+            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("plot.totalEarned")}</p>
             <p className="text-xl font-bold text-brand">
               <Money totals={totals.income} currency={currency} />
             </p>
@@ -150,7 +152,7 @@ export default function PlotPage() {
           className="bg-primary text-background-dark font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 btn-glow"
         >
           <Icon name="add" />
-          Add record
+          {t("farm.addRecord")}
         </Link>
         <button
           type="button"
@@ -158,20 +160,20 @@ export default function PlotPage() {
           className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
         >
           <Icon name="download" />
-          Export CSV
+          {t("plot.exportCsv")}
         </button>
       </section>
 
       {breakdown.length > 0 && (
         <section className="px-4 mb-6">
-          <SectionTitle>Where the money went</SectionTitle>
+          <SectionTitle>{t("plot.moneyWent")}</SectionTitle>
           <div className="bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 p-4 space-y-3 card">
             {breakdown.map((b) => (
               <div key={b.category.id}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-bold flex items-center gap-1.5">
                     <Icon name={b.category.icon} className="text-base text-slate-500" />
-                    {b.category.label}
+                    {category(b.category.id, b.category.label)}
                   </span>
                   <span className="text-xs text-slate-500">
                     {formatMoney(b.amount, currency)} ({b.pct}%)
@@ -189,7 +191,7 @@ export default function PlotPage() {
       {harvests.length > 0 && (
         <section className="px-4 mb-6">
           <SectionTitle>
-            Harvests{totals.harvestKg > 0 && ` · ${formatNumber(totals.harvestKg, 0)} kg`}
+            {t("record.harvests")}{totals.harvestKg > 0 && ` · ${formatNumber(totals.harvestKg, 0)} kg`}
           </SectionTitle>
           <div className="space-y-2">
             {harvests.map((r) => (
@@ -200,13 +202,13 @@ export default function PlotPage() {
       )}
 
       <section className="px-4 mb-6">
-        <SectionTitle>All records ({records.length})</SectionTitle>
+        <SectionTitle>{t("plot.allRecords", { count: records.length })}</SectionTitle>
         {records.length === 0 ? (
           <EmptyState
             icon="receipt_long"
-            title="No records for this plot"
-            text="Add what you spend on seed, fertilizer and labour, and what you sell."
-            action={{ href: `/farm-records/add?plot=${plot.id}`, label: "Add a record", icon: "add" }}
+            title={t("plot.noRecordsTitle")}
+            text={t("plot.noRecordsText")}
+            action={{ href: `/farm-records/add?plot=${plot.id}`, label: t("farm.addRecord"), icon: "add" }}
           />
         ) : (
           <div className="space-y-2">
@@ -214,7 +216,7 @@ export default function PlotPage() {
               <RecordRow
                 key={r.id}
                 record={r}
-                onDelete={() => confirm("Delete this record?") && actions.deleteRecord(r.id)}
+                onDelete={() => confirm(t("record.confirmDelete")) && actions.deleteRecord(r.id)}
               />
             ))}
           </div>
@@ -230,7 +232,7 @@ export default function PlotPage() {
           className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
         >
           <Icon name={plot.status === "active" ? "flag" : "restart_alt"} />
-          {plot.status === "active" ? "Mark season complete" : "Reopen this season"}
+          {plot.status === "active" ? t("plot.markComplete") : t("plot.reopen")}
         </button>
         <button
           type="button"
@@ -238,14 +240,14 @@ export default function PlotPage() {
           className="w-full text-rose-600 dark:text-rose-400 font-bold py-3 rounded-xl flex items-center justify-center gap-2"
         >
           <Icon name="delete" />
-          Delete plot
+          {t("plot.delete")}
         </button>
       </section>
 
-      <Sheet open={editing} onClose={() => setEditing(false)} title="Edit plot">
+      <Sheet open={editing} onClose={() => setEditing(false)} title={t("plot.edit")}>
         <PlotForm
           initial={plot}
-          submitLabel="Save changes"
+          submitLabel={t("common.saveChanges")}
           onSubmit={(input) => {
             actions.updatePlot(plot.id, input);
             setEditing(false);

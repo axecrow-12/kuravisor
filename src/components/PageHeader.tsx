@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useT } from "@/lib/i18n";
 import { Icon } from "./ui";
 
 interface PageHeaderProps {
@@ -9,13 +12,14 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ title, subtitle, backHref, rightAction }: PageHeaderProps) {
+  const { t } = useT();
   return (
     <header className="px-4 pb-3 pt-5 flex items-center justify-between gap-3 sticky top-0 z-20 bg-background-light/85 dark:bg-background-dark/85 backdrop-blur-md border-b border-primary/10">
       <div className="flex items-center gap-3 min-w-0">
         {backHref && (
           <Link
             href={backHref}
-            aria-label="Back"
+            aria-label={t("common.back")}
             className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 icon-btn"
           >
             <Icon name="arrow_back" />

@@ -1,4 +1,4 @@
-import type { Currency, FarmRecord, RecordType } from "./store";
+import type { Currency, FarmRecord, Language, RecordType } from "./store";
 
 export interface Category {
   id: string;
@@ -102,12 +102,15 @@ export function sortRecordsNewestFirst(records: FarmRecord[]) {
   );
 }
 
-export function currentSeason(): string {
+const SUMMER: Record<Language, string> = { en: "Summer", sn: "Zhizha", nd: "Ihlobo" };
+
+/** Default season label; stored as typed, so it is written in the current language. */
+export function currentSeason(lang: Language = "en"): string {
   // Zimbabwe's main (summer) season runs roughly Oct–Apr and spans two years.
   const d = new Date();
   const y = d.getFullYear();
   const start = d.getMonth() >= 8 ? y : y - 1;
-  return `${start}/${String(start + 1).slice(2)} Summer`;
+  return `${start}/${String(start + 1).slice(2)} ${SUMMER[lang]}`;
 }
 
 function csvCell(v: unknown) {
