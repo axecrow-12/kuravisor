@@ -5,12 +5,14 @@ import { useMemo } from "react";
 import BottomNav from "@/components/BottomNav";
 import { Icon, SectionTitle } from "@/components/ui";
 import { computeTotals, pick } from "@/lib/farm";
-import { daysFromToday, formatMoney, greeting, initials, relativeDay, timeAgo, todayISO } from "@/lib/format";
-import { cropLabel, getCondition, tipOfTheDay } from "@/lib/library";
+import { daysFromToday, formatMoney, greetingKey, initials, todayISO } from "@/lib/format";
+import { useT } from "@/lib/i18n";
+import { getCondition, tipOfTheDay } from "@/lib/library";
 import { actions, useAppState } from "@/lib/store";
 
 export default function Home() {
   const { profile, plots, records, tasks, scans, settings } = useAppState();
+  const { t, crop, ago, relDay, longToday } = useT();
   const today = todayISO();
 
   const activePlots = useMemo(() => plots.filter((p) => p.status === "active"), [plots]);
@@ -20,20 +22,18 @@ export default function Home() {
     [records, activeIds, settings.currency],
   );
   const openTasks = useMemo(
-    () => tasks.filter((t) => !t.done).sort((a, b) => a.date.localeCompare(b.date)),
+    () => tasks.filter((task) => !task.done).sort((a, b) => a.date.localeCompare(b.date)),
     [tasks],
   );
-  const dueCount = openTasks.filter((t) => t.date <= today).length;
+  const dueCount = openTasks.filter((task) => task.date <= today).length;
   const lastScan = scans[0];
-  const alertScan = scans.find(
-    (s) => s.matches.length > 0 && daysFromToday(s.createdAt) >= -14,
-  );
+  const alertScan = scans.find((s) => s.matches.length > 0 && daysFromToday(s.createdAt) >= -14);
   const alertCondition = alertScan && getCondition(alertScan.matches[0].id);
 
   const setup = [
-    { done: plots.length > 0, label: "Add your first plot", href: "/farm-records/plots/new", icon: "add_location_alt" },
-    { done: scans.length > 0, label: "Check a plant with Crop Doctor", href: "/crop-doctor", icon: "photo_camera" },
-    { done: tasks.length > 0, label: "Plan a farm task", href: "/calendar", icon: "event" },
+    { done: plots.length > 0, label: t("home.setupPlot"), href: "/farm-records/plots/new", icon: "add_location_alt" },
+    { done: scans.length > 0, label: t("home.setupScan"), href: "/crop-doctor", icon: "photo_camera" },
+    { done: tasks.length > 0, label: t("home.setupTask"), href: "/calendar", icon: "event" },
   ];
   const setupLeft = setup.filter((s) => !s.done).length;
 
@@ -41,29 +41,35 @@ export default function Home() {
     {
       href: "/farm-records",
       icon: "potted_plant",
-      title: "My Farm",
-      stat: plots.length ? `${activePlots.length} active plot${activePlots.length === 1 ? "" : "s"}` : "Add a plot",
+      title: t("home.tileFarm"),
+      stat: plots.length ? t("home.activePlots", { count: activePlots.length }) : t("home.addPlot"),
       bg: "from-emerald-600 to-green-900",
     },
     {
       href: "/crop-doctor",
       icon: "health_metrics",
-      title: "Crop Doctor",
-      stat: lastScan ? `Last check ${timeAgo(lastScan.createdAt)}` : "Check a plant",
+      title: t("nav.cropDoctor"),
+      stat: lastScan ? t("home.lastCheck", { when: ago(lastScan.createdAt) }) : t("home.checkPlant"),
       bg: "from-lime-600 to-emerald-800",
     },
     {
       href: "/farm-records",
       icon: "payments",
-      title: "Money",
-      stat: records.length ? `Profit ${formatMoney(seasonProfit, settings.currency)}` : "No records yet",
+      title: t("home.tileMoney"),
+      stat: records.length
+        ? t("home.profit", { amount: formatMoney(seasonProfit, settings.currency) })
+        : t("home.noRecords"),
       bg: "from-amber-500 to-orange-700",
     },
     {
       href: "/calendar",
       icon: "calendar_month",
-      title: "Tasks",
-      stat: dueCount ? `${dueCount} due now` : openTasks.length ? `${openTasks.length} upcoming` : "Nothing planned",
+      title: t("nav.tasks"),
+      stat: dueCount
+        ? t("home.dueNow", { count: dueCount })
+        : openTasks.length
+          ? t("home.upcoming", { count: openTasks.length })
+          : t("home.nothingPlanned"),
       bg: "from-sky-600 to-indigo-800",
     },
   ];
@@ -75,27 +81,27 @@ export default function Home() {
       <header className="flex items-center gap-3 bg-background-light/85 dark:bg-background-dark/85 backdrop-blur-md sticky top-0 z-20 px-4 pt-5 pb-3">
         <Link
           href="/profile"
-          aria-label="Profile"
+          aria-label={t("nav.profile")}
           className="size-11 shrink-0 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center font-bold text-brand"
         >
           {initials(profile?.name ?? "")}
         </Link>
         <div className="flex-1 min-w-0">
           <p className="text-slate-500 text-xs truncate">
-            {greeting()} · {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+            {t(greetingKey())} · {longToday()}
           </p>
           <h1 className="text-lg font-bold leading-tight truncate">{firstName}</h1>
         </div>
         <Link
           href="/knowledge-base"
-          aria-label="Search the knowledge base"
+          aria-label={t("home.searchKb")}
           className="flex size-10 items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 icon-btn"
         >
           <Icon name="search" />
         </Link>
         <Link
           href="/calendar"
-          aria-label={dueCount ? `${dueCount} tasks due` : "Tasks"}
+          aria-label={dueCount ? t("home.dueNow", { count: dueCount }) : t("nav.tasks")}
           className="relative flex size-10 items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 icon-btn"
         >
           <Icon name="notifications" />
@@ -116,14 +122,14 @@ export default function Home() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm truncate">
-                {alertCondition.name} on {cropLabel(alertScan.crop)}
+                {alertCondition.name} · {crop(alertScan.crop)}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Found {timeAgo(alertScan.createdAt)} · {alertCondition.urgency}
+                {t("home.found", { when: ago(alertScan.createdAt) })}
               </p>
             </div>
             <span className="px-3 py-1.5 bg-rose-600 text-white text-[11px] font-bold rounded-full uppercase shrink-0">
-              View
+              {t("common.view")}
             </span>
           </Link>
         )}
@@ -131,9 +137,9 @@ export default function Home() {
         {setupLeft > 0 && (
           <section className="bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 p-4 card">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold">Get started</h2>
+              <h2 className="font-bold">{t("home.getStarted")}</h2>
               <span className="text-xs font-bold text-slate-500">
-                {setup.length - setupLeft} of {setup.length} done
+                {t("home.stepsDone", { done: setup.length - setupLeft, total: setup.length })}
               </span>
             </div>
             <div className="h-1.5 bg-slate-100 dark:bg-white/10 rounded-full mb-3 overflow-hidden">
@@ -144,7 +150,7 @@ export default function Home() {
             </div>
             <ul className="space-y-1">
               {setup.map((s) => (
-                <li key={s.label}>
+                <li key={s.href}>
                   <Link
                     href={s.href}
                     className={`flex items-center gap-3 p-2 -mx-2 rounded-xl hover:bg-primary/5 ${s.done ? "opacity-60" : ""}`}
@@ -164,23 +170,23 @@ export default function Home() {
         )}
 
         <section className="grid grid-cols-2 gap-3">
-          {tiles.map((t) => (
+          {tiles.map((tile) => (
             <Link
-              key={t.title}
-              href={t.href}
-              className={`group relative overflow-hidden rounded-2xl aspect-[5/4] p-4 flex flex-col justify-end bg-gradient-to-br ${t.bg} text-white card-interactive`}
+              key={tile.icon}
+              href={tile.href}
+              className={`group relative overflow-hidden rounded-2xl aspect-[5/4] p-4 flex flex-col justify-end bg-gradient-to-br ${tile.bg} text-white card-interactive`}
             >
               <div className="absolute inset-0 topo-pattern opacity-60" />
               <Icon
-                name={t.icon}
+                name={tile.icon}
                 className="absolute -top-2 -right-2 text-[88px] text-white/15 transition-transform duration-500 group-hover:scale-110"
               />
               <div className="relative">
                 <div className="size-9 rounded-full bg-white/20 flex items-center justify-center mb-2">
-                  <Icon name={t.icon} className="text-xl" />
+                  <Icon name={tile.icon} className="text-xl" />
                 </div>
-                <p className="text-base font-bold leading-tight">{t.title}</p>
-                <p className="text-white/80 text-xs mt-0.5 truncate">{t.stat}</p>
+                <p className="text-base font-bold leading-tight">{tile.title}</p>
+                <p className="text-white/80 text-xs mt-0.5 truncate">{tile.stat}</p>
               </div>
             </Link>
           ))}
@@ -189,42 +195,42 @@ export default function Home() {
         <section className="bg-primary/10 border border-primary/20 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Icon name="lightbulb" className="text-brand" filled />
-            <h2 className="font-bold">Tip of the Day</h2>
+            <h2 className="font-bold">{t("home.tipOfTheDay")}</h2>
           </div>
           <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{tipOfTheDay()}</p>
         </section>
 
         <section>
-          <SectionTitle action={{ href: "/calendar", label: "All tasks" }}>Coming up</SectionTitle>
+          <SectionTitle action={{ href: "/calendar", label: t("home.allTasks") }}>{t("home.comingUp")}</SectionTitle>
           {openTasks.length === 0 ? (
             <Link
               href="/calendar"
               className="flex items-center gap-3 p-4 rounded-2xl border border-dashed border-slate-300 dark:border-white/10 text-sm text-slate-500"
             >
               <Icon name="event_available" className="text-brand" />
-              No tasks planned. Tap to add one.
+              {t("home.noTasks")}
             </Link>
           ) : (
             <ul className="space-y-2">
-              {openTasks.slice(0, 3).map((t) => {
-                const overdue = t.date < today;
+              {openTasks.slice(0, 3).map((task) => {
+                const overdue = task.date < today;
                 return (
                   <li
-                    key={t.id}
+                    key={task.id}
                     className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 card"
                   >
                     <button
                       type="button"
-                      onClick={() => actions.toggleTask(t.id)}
-                      aria-label={`Mark "${t.title}" done`}
+                      onClick={() => actions.toggleTask(task.id)}
+                      aria-label={t("tasks.markDone", { title: task.title })}
                       className="size-8 rounded-full border-2 border-slate-300 dark:border-white/20 flex items-center justify-center hover:border-primary hover:bg-primary/10 shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{t.title}</p>
-                      {t.notes && <p className="text-xs text-slate-500 truncate">{t.notes}</p>}
+                      <p className="font-semibold text-sm truncate">{task.title}</p>
+                      {task.notes && <p className="text-xs text-slate-500 truncate">{task.notes}</p>}
                     </div>
                     <span className={`text-xs font-bold shrink-0 ${overdue ? "text-rose-500" : "text-slate-500"}`}>
-                      {relativeDay(t.date)}
+                      {relDay(task.date)}
                     </span>
                   </li>
                 );
@@ -239,14 +245,14 @@ export default function Home() {
             className="flex items-center gap-3 p-4 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 card-interactive"
           >
             <Icon name="menu_book" className="text-brand" />
-            <span className="text-sm font-bold">Knowledge Base</span>
+            <span className="text-sm font-bold">{t("kb.title")}</span>
           </Link>
           <Link
             href="/agro-dealers"
             className="flex items-center gap-3 p-4 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 card-interactive"
           >
             <Icon name="storefront" className="text-brand" />
-            <span className="text-sm font-bold">Agro-Dealers</span>
+            <span className="text-sm font-bold">{t("dealers.title")}</span>
           </Link>
         </section>
       </main>

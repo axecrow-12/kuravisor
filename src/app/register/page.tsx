@@ -6,15 +6,10 @@ import { Suspense, useState } from "react";
 import AuthLayout, { FormError } from "@/components/AuthLayout";
 import { Field, Icon, Segmented, inputClass } from "@/components/ui";
 import { ApiError, register } from "@/lib/api";
+import { LANGUAGE_OPTIONS, useT } from "@/lib/i18n";
 import { actions, type Language } from "@/lib/store";
 
 type Mode = "cloud" | "local";
-
-const LANGUAGES: { value: Language; label: string }[] = [
-  { value: "en", label: "English" },
-  { value: "sn", label: "Shona" },
-  { value: "nd", label: "Ndebele" },
-];
 
 export default function RegisterPage() {
   return (
@@ -26,6 +21,7 @@ export default function RegisterPage() {
 
 function RegisterForm() {
   const params = useSearchParams();
+  const { t, lang } = useT();
   const [mode, setMode] = useState<Mode>(params.has("offline") ? "local" : "cloud");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -33,13 +29,11 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [language, setLanguage] = useState<Language>("en");
   const [error, setError] = useState<string | null>(null);
   const [unreachable, setUnreachable] = useState(false);
   const [busy, setBusy] = useState(false);
 
   function finish(extra: { accountType: Mode; email?: string; userId?: string; token?: string }) {
-    actions.updateSettings({ language });
     actions.signIn({ name: name.trim(), phone: phone.trim(), location: location.trim(), ...extra });
   }
 
@@ -48,19 +42,20 @@ function RegisterForm() {
     setError(null);
     setUnreachable(false);
 
-    if (!name.trim()) return setError("Please enter your name.");
+    if (!name.trim()) return setError(t("register.errName"));
     if (mode === "local") return finish({ accountType: "local" });
 
-    if (password.length < 6) return setError("Password must be at least 6 characters.");
-    if (password !== confirm) return setError("Passwords do not match.");
+    if (password.length < 6) return setError(t("register.errPasswordLength"));
+    if (password !== confirm) return setError(t("register.errPasswordMatch"));
 
     setBusy(true);
     try {
       const { token, user } = await register(name.trim(), email.trim(), password);
       finish({ accountType: "cloud", email: user.email, userId: user.id, token });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed.");
-      setUnreachable(err instanceof ApiError && err.status === 0);
+      const offline = err instanceof ApiError && err.status === 0;
+      setError(offline ? t("auth.unreachable") : err instanceof Error ? err.message : t("register.failed"));
+      setUnreachable(offline);
     } finally {
       setBusy(false);
     }
@@ -69,8 +64,8 @@ function RegisterForm() {
   return (
     <AuthLayout
       icon="person_add"
-      title="Create Account"
-      subtitle="Set up KuraVisor on this phone. Your farm records are saved on the device."
+      title={t("register.title")}
+      subtitle={t("register.subtitle")}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Segmented<Mode>
@@ -80,29 +75,29 @@ function RegisterForm() {
             setError(null);
           }}
           options={[
-            { value: "cloud", label: "Online account" },
-            { value: "local", label: "Offline only" },
+            { value: "cloud", label: t("register.modeCloud") },
+            { value: "local", label: t("register.modeLocal") },
           ]}
         />
         <p className="text-xs text-slate-500 -mt-1">
           {mode === "cloud"
-            ? "Needs internet once to register. Lets you sign in on other devices later."
-            : "No email or internet needed. You can create an online account later."}
+            ? t("register.modeCloudHint")
+            : t("register.modeLocalHint")}
         </p>
 
-        <Field label="Full name" htmlFor="name">
+        <Field label={t("register.fullName")} htmlFor="name">
           <input
             id="name"
             autoComplete="name"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
+            placeholder={t("register.namePlaceholder")}
             className={inputClass}
           />
         </Field>
 
-        <Field label="Phone number (optional)" htmlFor="phone">
+        <Field label={t("register.phoneOptional")} htmlFor="phone">
           <input
             id="phone"
             type="tel"
@@ -114,19 +109,19 @@ function RegisterForm() {
           />
         </Field>
 
-        <Field label="Farm location (optional)" htmlFor="location">
+        <Field label={t("register.locationOptional")} htmlFor="location">
           <input
             id="location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Marondera, Mashonaland East"
+            placeholder={t("register.locationPlaceholder")}
             className={inputClass}
           />
         </Field>
 
         {mode === "cloud" && (
           <>
-            <Field label="Email" htmlFor="email">
+            <Field label={t("auth.email")} htmlFor="email">
               <input
                 id="email"
                 type="email"
@@ -139,7 +134,7 @@ function RegisterForm() {
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Password" htmlFor="password">
+              <Field label={t("auth.password")} htmlFor="password">
                 <input
                   id="password"
                   type="password"
@@ -148,11 +143,11 @@ function RegisterForm() {
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="6+ characters"
+                  placeholder={t("register.passwordPlaceholder")}
                   className={inputClass}
                 />
               </Field>
-              <Field label="Confirm" htmlFor="confirm">
+              <Field label={t("register.confirm")} htmlFor="confirm">
                 <input
                   id="confirm"
                   type="password"
@@ -160,7 +155,7 @@ function RegisterForm() {
                   required
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Repeat it"
+                  placeholder={t("register.confirmPlaceholder")}
                   className={inputClass}
                 />
               </Field>
@@ -169,7 +164,11 @@ function RegisterForm() {
         )}
 
         <Field label="Language / Mutauro / Ulimi">
-          <Segmented value={language} onChange={setLanguage} options={LANGUAGES} />
+          <Segmented<Language>
+            value={lang}
+            onChange={(language) => actions.updateSettings({ language })}
+            options={LANGUAGE_OPTIONS}
+          />
         </Field>
 
         <FormError message={error} />
@@ -184,7 +183,7 @@ function RegisterForm() {
             className="w-full bg-slate-100 dark:bg-white/10 font-bold py-3 rounded-xl flex items-center justify-center gap-2"
           >
             <Icon name="cloud_off" />
-            Continue offline instead
+            {t("register.continueOffline")}
           </button>
         )}
 
@@ -194,14 +193,14 @@ function RegisterForm() {
           className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-60"
         >
           <Icon name={busy ? "progress_activity" : "how_to_reg"} className={busy ? "animate-spin" : ""} />
-          {busy ? "Creating account…" : mode === "cloud" ? "Create Account" : "Start Using KuraVisor"}
+          {busy ? t("register.creating") : mode === "cloud" ? t("register.title") : t("register.startOffline")}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        Already registered?{" "}
+        {t("register.alreadyRegistered")}{" "}
         <Link href="/login" className="text-brand font-bold">
-          Sign in
+          {t("auth.signIn")}
         </Link>
       </p>
     </AuthLayout>

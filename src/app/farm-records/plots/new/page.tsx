@@ -3,16 +3,18 @@
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import PlotForm from "@/components/PlotForm";
+import { useT } from "@/lib/i18n";
 import { actions } from "@/lib/store";
 
 export default function NewPlotPage() {
   const router = useRouter();
+  const { t } = useT();
   return (
     <div className="min-h-dvh pb-10">
-      <PageHeader title="New Plot" subtitle="A field or garden you farm" backHref="/farm-records" />
+      <PageHeader title={t("farm.newPlot")} subtitle={t("plotForm.subtitle")} backHref="/farm-records" />
       <div className="px-4 mt-5">
         <PlotForm
-          submitLabel="Save Plot"
+          submitLabel={t("plotForm.save")}
           onSubmit={(input) => {
             const plot = actions.addPlot(input);
             router.replace(`/farm-records/plots/${plot.id}`);

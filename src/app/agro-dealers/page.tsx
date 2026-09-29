@@ -5,6 +5,7 @@ import { FormError } from "@/components/AuthLayout";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
 import { EmptyState, Field, Icon, Sheet, inputClass } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 import { actions, useAppState } from "@/lib/store";
 
 function mapsSearchUrl(query: string) {
@@ -13,6 +14,7 @@ function mapsSearchUrl(query: string) {
 
 export default function AgroDealersPage() {
   const { dealers, profile } = useAppState();
+  const { t } = useT();
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
@@ -43,7 +45,7 @@ export default function AgroDealersPage() {
 
   function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return setError("Enter the shop name.");
+    if (!name.trim()) return setError(t("dealers.errName"));
     actions.addDealer({
       name: name.trim(),
       location: location.trim(),
@@ -56,14 +58,14 @@ export default function AgroDealersPage() {
   return (
     <div className="min-h-dvh pb-28">
       <PageHeader
-        title="Agro-Dealers"
-        subtitle="Shops for seed, fertilizer and chemicals"
+        title={t("dealers.title")}
+        subtitle={t("dealers.subtitle")}
         backHref="/"
         rightAction={
           <button
             type="button"
             onClick={openSheet}
-            aria-label="Add a shop"
+            aria-label={t("dealers.add")}
             className="size-10 flex items-center justify-center rounded-full bg-primary text-background-dark glow"
           >
             <Icon name="add_business" className="text-xl" />
@@ -83,8 +85,8 @@ export default function AgroDealersPage() {
             <Icon name="travel_explore" className="text-2xl" />
           </div>
           <div className="relative flex-1">
-            <p className="font-bold">Find shops near me</p>
-            <p className="text-xs text-white/80">Opens a map search (needs internet)</p>
+            <p className="font-bold">{t("dealers.findNear")}</p>
+            <p className="text-xs text-white/80">{t("dealers.findNearHint")}</p>
           </div>
           <Icon name="open_in_new" className="relative text-white/80" />
         </a>
@@ -92,15 +94,15 @@ export default function AgroDealersPage() {
 
       <section className="px-4">
         <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3 font-display">
-          My shops {dealers.length > 0 && `(${dealers.length})`}
+          {t("dealers.myShops")} {dealers.length > 0 && `(${dealers.length})`}
         </h2>
 
         {dealers.length === 0 ? (
           <EmptyState
             icon="storefront"
-            title="Save the shops you use"
-            text="Keep names, phone numbers and what each shop sells, so you can call them even when you're offline."
-            action={{ onClick: openSheet, label: "Add a shop", icon: "add" }}
+            title={t("dealers.emptyTitle")}
+            text={t("dealers.emptyText")}
+            action={{ onClick: openSheet, label: t("dealers.add"), icon: "add" }}
           />
         ) : (
           <>
@@ -109,7 +111,7 @@ export default function AgroDealersPage() {
                 <Icon name="search" className="text-slate-400" />
                 <input
                   type="search"
-                  placeholder="Search by name, place or product…"
+                  placeholder={t("dealers.search")}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="bg-transparent flex-1 text-sm outline-none placeholder:text-slate-400"
@@ -148,8 +150,8 @@ export default function AgroDealersPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => confirm(`Remove ${d.name}?`) && actions.deleteDealer(d.id)}
-                      aria-label={`Remove ${d.name}`}
+                      onClick={() => confirm(t("dealers.confirmRemove", { name: d.name })) && actions.deleteDealer(d.id)}
+                      aria-label={t("dealers.remove", { name: d.name })}
                       className="size-8 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 shrink-0"
                     >
                       <Icon name="delete" className="text-lg" />
@@ -162,11 +164,11 @@ export default function AgroDealersPage() {
                         className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-background-dark text-sm font-bold"
                       >
                         <Icon name="call" className="text-lg" />
-                        Call
+                        {t("dealers.call")}
                       </a>
                     ) : (
                       <span className="flex items-center justify-center py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs text-slate-500">
-                        No phone saved
+                        {t("dealers.noPhone")}
                       </span>
                     )}
                     <a
@@ -176,28 +178,28 @@ export default function AgroDealersPage() {
                       className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 text-sm font-bold"
                     >
                       <Icon name="directions" className="text-lg" />
-                      Directions
+                      {t("dealers.directions")}
                     </a>
                   </div>
                 </div>
               ))}
               {filtered.length === 0 && (
-                <p className="text-center text-sm text-slate-500 py-8">No shops match &ldquo;{query}&rdquo;.</p>
+                <p className="text-center text-sm text-slate-500 py-8">{t("dealers.noMatches", { query })}</p>
               )}
             </div>
           </>
         )}
       </section>
 
-      <Sheet open={adding} onClose={() => setAdding(false)} title="Add a shop">
+      <Sheet open={adding} onClose={() => setAdding(false)} title={t("dealers.add")}>
         <form onSubmit={save} className="space-y-4">
-          <Field label="Shop name" htmlFor="d-name">
+          <Field label={t("dealers.name")} htmlFor="d-name">
             <input id="d-name" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
           </Field>
-          <Field label="Town or address" htmlFor="d-loc">
+          <Field label={t("dealers.location")} htmlFor="d-loc">
             <input id="d-loc" value={location} onChange={(e) => setLocation(e.target.value)} className={inputClass} />
           </Field>
-          <Field label="Phone" htmlFor="d-phone">
+          <Field label={t("dealers.phone")} htmlFor="d-phone">
             <input
               id="d-phone"
               type="tel"
@@ -207,12 +209,12 @@ export default function AgroDealersPage() {
               className={inputClass}
             />
           </Field>
-          <Field label="What they sell" htmlFor="d-products" hint="Separate with commas">
+          <Field label={t("dealers.products")} htmlFor="d-products" hint={t("dealers.productsHint")}>
             <input
               id="d-products"
               value={products}
               onChange={(e) => setProducts(e.target.value)}
-              placeholder="Seed, Compound D, AN, pesticides"
+              placeholder={t("dealers.productsPlaceholder")}
               className={inputClass}
             />
           </Field>
@@ -222,7 +224,7 @@ export default function AgroDealersPage() {
             className="w-full py-4 rounded-xl bg-primary text-background-dark font-bold flex items-center justify-center gap-2 btn-glow"
           >
             <Icon name="save" />
-            Save shop
+            {t("dealers.save")}
           </button>
         </form>
       </Sheet>

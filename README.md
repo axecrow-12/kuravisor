@@ -14,7 +14,19 @@ KuraVisor is an offline first crop doctor and farm assistant for smallholder far
 
 **Agro Dealers.** Save the shops you use with phone numbers to call offline, and search for nearby shops on a map when connected.
 
-**Settings.** Text size, light or dark theme, main currency, task reminders, data backup and restore (JSON), CSV export, sign out and delete all data.
+**Settings.** Language (English, chiShona, isiNdebele), text size, light or dark theme, main currency, task reminders, data backup and restore (JSON), CSV export, sign out and delete all data.
+
+## Languages
+
+The app is available in English, chiShona and isiNdebele. Farmers pick a language on the first onboarding screen, on the register page, or later in Settings, and the whole interface switches immediately.
+
+1. Text lives in `src/locales/en.ts`, `sn.ts` and `nd.ts`. English is the source of truth for message keys, and the build fails if Shona or Ndebele is missing a key.
+2. Components read text through `useT()` from `src/lib/i18n.ts`, which also formats dates with local month and weekday names.
+3. Crop names, record categories, units, severity and task types are translated. Farm data is always stored in English so it stays the same whatever language is shown.
+
+**Not yet translated:** the crop health library in `src/lib/library.ts` (symptoms, diagnoses, treatments, pesticide safety, guides and daily tips). A wrong translation of pesticide or diagnosis advice could cause harm, so it stays in English until a native speaking agronomist can translate and check it. The app shows a notice about this on those screens when Shona or Ndebele is selected.
+
+**Review needed:** the Shona and Ndebele interface text has not yet been reviewed by native speakers. Please have both files checked before release.
 
 ## How data is stored
 
@@ -53,6 +65,8 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 | `src/lib/library.ts` | Crops, symptoms, conditions, treatments, guides, tips |
 | `src/lib/farm.ts` | Money and harvest calculations, CSV helpers |
 | `src/lib/api.ts` | Backend client |
+| `src/lib/i18n.ts` | Translation hook and helpers |
+| `src/locales` | English, Shona and Ndebele interface text |
 | `backend` | Express and Prisma API for accounts |
 
 ## Checks

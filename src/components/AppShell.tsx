@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { todayISO } from "@/lib/format";
+import { translate } from "@/lib/i18n";
 import { actions, useAppState, useHydrated, type FontSize, type Theme } from "@/lib/store";
 import { Icon } from "./ui";
 
@@ -81,14 +82,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (settings.lastNotifiedOn === today) return;
     const due = tasks.filter((t) => !t.done && t.date <= today);
     if (due.length === 0) return;
-    new Notification("KuraVisor: tasks due", {
+    const lang = settings.language;
+    new Notification(translate(lang, "notify.title"), {
       body:
         due.length === 1
           ? due[0].title
-          : `${due[0].title} and ${due.length - 1} more task${due.length > 2 ? "s" : ""}`,
+          : translate(lang, "notify.more", { title: due[0].title, count: due.length - 1 }),
     });
     actions.updateSettings({ lastNotifiedOn: today });
-  }, [hydrated, profile, settings.notifications, settings.lastNotifiedOn, tasks]);
+  }, [hydrated, profile, settings.notifications, settings.lastNotifiedOn, settings.language, tasks]);
 
   if (!hydrated || redirect) return <Splash />;
   return <>{children}</>;

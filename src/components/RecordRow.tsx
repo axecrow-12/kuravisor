@@ -1,7 +1,8 @@
 "use client";
 
 import { categoryFor } from "@/lib/farm";
-import { formatDate, formatMoney, formatNumber } from "@/lib/format";
+import { formatMoney, formatNumber } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import type { FarmRecord } from "@/lib/store";
 import { Icon } from "./ui";
 
@@ -20,11 +21,14 @@ export default function RecordRow({
   subtitle?: string;
   onDelete?: () => void;
 }) {
+  const { t, category, unit, date } = useT();
   const cat = categoryFor(record.type, record.category);
+  const catLabel = category(cat.id, cat.label);
   const style = TYPE_STYLE[record.type];
-  const qty = record.quantity ? `${formatNumber(record.quantity, 2)} ${record.unit ?? ""}`.trim() : "";
-  const title =
-    record.type === "harvest" ? `Harvest${qty ? ` · ${qty}` : ""}` : `${cat.label}${qty ? ` · ${qty}` : ""}`;
+  const qty = record.quantity
+    ? `${formatNumber(record.quantity, 2)} ${record.unit ? unit(record.unit) : ""}`.trim()
+    : "";
+  const title = `${record.type === "harvest" ? t("record.harvest") : catLabel}${qty ? ` · ${qty}` : ""}`;
 
   return (
     <div className="flex items-center gap-3 bg-white dark:bg-white/5 p-3.5 rounded-xl border border-slate-100 dark:border-white/5 card">
@@ -34,7 +38,7 @@ export default function RecordRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold truncate">{title}</p>
         <p className="text-xs text-slate-500 truncate">
-          {[subtitle, record.type === "harvest" ? cat.label : null, formatDate(record.date)]
+          {[subtitle, record.type === "harvest" ? catLabel : null, date(record.date)]
             .filter(Boolean)
             .join(" · ")}
         </p>
@@ -53,7 +57,7 @@ export default function RecordRow({
         <button
           type="button"
           onClick={onDelete}
-          aria-label="Delete record"
+          aria-label={t("record.delete")}
           className="size-8 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 shrink-0"
         >
           <Icon name="delete" className="text-lg" />

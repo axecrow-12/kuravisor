@@ -2,15 +2,15 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { timeAgo } from "@/lib/format";
-import { cropLabel, getCondition } from "@/lib/library";
+import { useT, type Translator } from "@/lib/i18n";
+import { getCondition } from "@/lib/library";
 import type { Scan } from "@/lib/store";
 import { Icon } from "./ui";
 
-export function scanOutcome(scan: Scan) {
-  if (scan.symptoms.length === 0) return { label: "Healthy", tone: "good" as const };
+export function scanOutcome(scan: Scan, t: Translator) {
+  if (scan.symptoms.length === 0) return { label: t("scan.healthy"), tone: "good" as const };
   const top = scan.matches[0] && getCondition(scan.matches[0].id);
-  if (!top) return { label: "No clear match", tone: "unknown" as const };
+  if (!top) return { label: t("scan.noMatch"), tone: "unknown" as const };
   return { label: top.name, tone: top.severity === "high" ? ("bad" as const) : ("warn" as const) };
 }
 
@@ -22,7 +22,8 @@ const TONE = {
 };
 
 export default function ScanRow({ scan }: { scan: Scan }) {
-  const outcome = scanOutcome(scan);
+  const { t, crop, ago } = useT();
+  const outcome = scanOutcome(scan, t);
   const tone = TONE[outcome.tone];
   return (
     <Link
@@ -42,7 +43,7 @@ export default function ScanRow({ scan }: { scan: Scan }) {
           <p className="font-bold truncate">{outcome.label}</p>
         </div>
         <p className="text-xs text-slate-500 mt-0.5">
-          {cropLabel(scan.crop)} · {timeAgo(scan.createdAt)}
+          {crop(scan.crop)} · {ago(scan.createdAt)}
         </p>
       </div>
       <Icon name="chevron_right" className="text-slate-400 shrink-0" />

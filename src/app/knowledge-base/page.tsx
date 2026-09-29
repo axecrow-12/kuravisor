@@ -4,17 +4,18 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
-import { Icon } from "@/components/ui";
-import { CONDITIONS, GUIDES, cropLabel, type ConditionType } from "@/lib/library";
+import { EnglishOnlyNote, Icon } from "@/components/ui";
+import { useT, type MessageKey } from "@/lib/i18n";
+import { CONDITIONS, GUIDES, type ConditionType } from "@/lib/library";
 
 type Category = "all" | ConditionType | "practice";
 
-const CATEGORY_TABS: { id: Category; label: string; icon: string }[] = [
-  { id: "all", label: "All", icon: "apps" },
-  { id: "pest", label: "Pests", icon: "bug_report" },
-  { id: "disease", label: "Diseases", icon: "coronavirus" },
-  { id: "nutrient", label: "Nutrients", icon: "science" },
-  { id: "practice", label: "Practices", icon: "agriculture" },
+const CATEGORY_TABS: { id: Category; label: MessageKey; icon: string }[] = [
+  { id: "all", label: "common.all", icon: "apps" },
+  { id: "pest", label: "kb.pests", icon: "bug_report" },
+  { id: "disease", label: "kb.diseases", icon: "coronavirus" },
+  { id: "nutrient", label: "kb.nutrients", icon: "science" },
+  { id: "practice", label: "kb.practices", icon: "agriculture" },
 ];
 
 const ICON: Record<Category, string> = {
@@ -32,7 +33,7 @@ const ARTICLES = [
     category: c.type as Category,
     icon: ICON[c.type],
     summary: c.summary,
-    tags: c.crops.map(cropLabel),
+    crops: c.crops,
   })),
   ...GUIDES.map((g) => ({
     id: g.id,
@@ -40,11 +41,12 @@ const ARTICLES = [
     category: "practice" as Category,
     icon: g.icon,
     summary: g.summary,
-    tags: ["Guide"],
+    crops: [] as string[],
   })),
 ];
 
 export default function KnowledgeBasePage() {
+  const { t, crop } = useT();
   const [category, setCategory] = useState<Category>("all");
   const [query, setQuery] = useState("");
 
@@ -53,20 +55,24 @@ export default function KnowledgeBasePage() {
     return ARTICLES.filter(
       (a) =>
         (category === "all" || a.category === category) &&
-        (!q || `${a.title} ${a.summary} ${a.tags.join(" ")}`.toLowerCase().includes(q)),
+        (!q ||
+          // Match crop names in English and in the chosen language.
+          `${a.title} ${a.summary} ${a.crops.join(" ")} ${a.crops.map(crop).join(" ")}`
+            .toLowerCase()
+            .includes(q)),
     );
-  }, [category, query]);
+  }, [category, query, crop]);
 
   return (
     <div className="min-h-dvh pb-28">
-      <PageHeader title="Knowledge Base" subtitle={`${ARTICLES.length} articles · available offline`} backHref="/" />
+      <PageHeader title={t("kb.title")} subtitle={t("kb.subtitle", { count: ARTICLES.length })} backHref="/" />
 
       <section className="px-4 mt-4 mb-3">
         <label className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl px-3 py-3 border border-slate-200 dark:border-white/10 input-glow">
           <Icon name="search" className="text-slate-400" />
           <input
             type="search"
-            placeholder="Search pests, diseases, crops…"
+            placeholder={t("kb.search")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="bg-transparent flex-1 text-sm outline-none placeholder:text-slate-400"
@@ -75,6 +81,7 @@ export default function KnowledgeBasePage() {
       </section>
 
       <section className="px-4 mb-4">
+        <EnglishOnlyNote />
         <div className="flex gap-2 overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map((cat) => (
             <button
@@ -89,7 +96,7 @@ export default function KnowledgeBasePage() {
               }`}
             >
               <Icon name={cat.icon} className="text-base" />
-              {cat.label}
+              {t(cat.label)}
             </button>
           ))}
         </div>
@@ -109,12 +116,12 @@ export default function KnowledgeBasePage() {
               <p className="font-bold mb-1">{a.title}</p>
               <p className="text-xs text-slate-500 line-clamp-2">{a.summary}</p>
               <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                {a.tags.map((t) => (
+                {(a.crops.length ? a.crops.map(crop) : [t("kb.guide")]).map((tag) => (
                   <span
-                    key={t}
+                    key={tag}
                     className="text-[10px] font-bold bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-400"
                   >
-                    {t}
+                    {tag}
                   </span>
                 ))}
               </div>
@@ -125,7 +132,7 @@ export default function KnowledgeBasePage() {
         {filtered.length === 0 && (
           <div className="text-center py-12">
             <Icon name="search_off" className="text-4xl text-slate-400" />
-            <p className="text-sm text-slate-500 mt-2">No articles found</p>
+            <p className="text-sm text-slate-500 mt-2">{t("kb.noResults")}</p>
           </div>
         )}
       </section>

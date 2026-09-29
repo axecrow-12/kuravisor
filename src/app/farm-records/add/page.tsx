@@ -7,18 +7,20 @@ import PageHeader from "@/components/PageHeader";
 import { EmptyState, Field, Icon, inputClass } from "@/components/ui";
 import { CATEGORIES, UNITS } from "@/lib/farm";
 import { todayISO } from "@/lib/format";
+import { useT, type MessageKey } from "@/lib/i18n";
 import { actions, useAppState, type Currency, type RecordType } from "@/lib/store";
 
-const TYPES: { value: RecordType; label: string; icon: string; active: string }[] = [
-  { value: "expense", label: "Expense", icon: "arrow_upward", active: "bg-rose-500 text-white" },
-  { value: "income", label: "Income", icon: "arrow_downward", active: "bg-primary text-background-dark" },
-  { value: "harvest", label: "Harvest", icon: "agriculture", active: "bg-amber-500 text-white" },
+const TYPES: { value: RecordType; label: MessageKey; save: MessageKey; icon: string; active: string }[] = [
+  { value: "expense", label: "record.expense", save: "addRecord.saveExpense", icon: "arrow_upward", active: "bg-rose-500 text-white" },
+  { value: "income", label: "record.income", save: "addRecord.saveIncome", icon: "arrow_downward", active: "bg-primary text-background-dark" },
+  { value: "harvest", label: "record.harvest", save: "addRecord.saveHarvest", icon: "agriculture", active: "bg-amber-500 text-white" },
 ];
 
 function AddRecordForm() {
   const router = useRouter();
   const params = useSearchParams();
   const { plots, settings } = useAppState();
+  const { t, crop, category: categoryName, unit: unitLabel } = useT();
   const activePlots = plots.filter((p) => p.status === "active");
   const selectable = activePlots.length ? activePlots : plots;
 
@@ -44,9 +46,9 @@ function AddRecordForm() {
       <div className="px-4 mt-6">
         <EmptyState
           icon="add_location_alt"
-          title="Add a plot first"
-          text="Records belong to a plot so KuraVisor can work out profit for each field."
-          action={{ href: "/farm-records/plots/new", label: "Add a plot", icon: "add" }}
+          title={t("addRecord.plotFirstTitle")}
+          text={t("addRecord.plotFirstText")}
+          action={{ href: "/farm-records/plots/new", label: t("farm.newPlot"), icon: "add" }}
         />
       </div>
     );
@@ -68,10 +70,10 @@ function AddRecordForm() {
     e.preventDefault();
     const qty = quantity ? Number(quantity) : undefined;
     const amt = amount ? Number(amount) : undefined;
-    if (!plotId) return setError("Choose a plot.");
-    if (!date) return setError("Choose a date.");
-    if (type === "harvest" && !(qty && qty > 0)) return setError("Enter how much you harvested.");
-    if (type !== "harvest" && !(amt && amt > 0)) return setError("Enter the amount.");
+    if (!plotId) return setError(t("addRecord.errPlot"));
+    if (!date) return setError(t("addRecord.errDate"));
+    if (type === "harvest" && !(qty && qty > 0)) return setError(t("addRecord.errHarvest"));
+    if (type !== "harvest" && !(amt && amt > 0)) return setError(t("addRecord.errAmount"));
 
     actions.addRecord({
       plotId,
@@ -88,28 +90,28 @@ function AddRecordForm() {
     router.replace(`/farm-records/plots/${plotId}`);
   }
 
-  const submitStyle = TYPES.find((t) => t.value === type)!.active;
+  const typeInfo = TYPES.find((x) => x.value === type)!;
 
   return (
     <form onSubmit={handleSubmit} className="px-4 mt-4 space-y-5">
       <div className="bg-white dark:bg-white/5 rounded-xl p-1 grid grid-cols-3 gap-1 border border-slate-200 dark:border-white/10 card">
-        {TYPES.map((t) => (
+        {TYPES.map((x) => (
           <button
-            key={t.value}
+            key={x.value}
             type="button"
-            aria-pressed={type === t.value}
-            onClick={() => changeType(t.value)}
+            aria-pressed={type === x.value}
+            onClick={() => changeType(x.value)}
             className={`py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-1.5 transition-colors ${
-              type === t.value ? t.active : "text-slate-500"
+              type === x.value ? x.active : "text-slate-500"
             }`}
           >
-            <Icon name={t.icon} className="text-lg" />
-            {t.label}
+            <Icon name={x.icon} className="text-lg" />
+            {t(x.label)}
           </button>
         ))}
       </div>
 
-      <Field label="Plot" htmlFor="plot">
+      <Field label={t("plot.title")} htmlFor="plot">
         <div className="relative">
           <select
             id="plot"
@@ -119,7 +121,7 @@ function AddRecordForm() {
           >
             {plots.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} ({p.crop}){p.status === "completed" ? " · completed" : ""}
+                {p.name} ({crop(p.crop)}){p.status === "completed" ? ` · ${t("plot.completed")}` : ""}
               </option>
             ))}
           </select>
@@ -127,7 +129,7 @@ function AddRecordForm() {
         </div>
       </Field>
 
-      <Field label={type === "harvest" ? "Grade" : "Category"}>
+      <Field label={type === "harvest" ? t("addRecord.grade") : t("addRecord.category")}>
         <div className="grid grid-cols-3 gap-2">
           {CATEGORIES[type].map((cat) => (
             <button
@@ -142,13 +144,13 @@ function AddRecordForm() {
               }`}
             >
               <Icon name={cat.icon} className="text-xl" />
-              <span className="text-[11px] font-bold uppercase">{cat.label}</span>
+              <span className="text-[11px] font-bold uppercase">{categoryName(cat.id, cat.label)}</span>
             </button>
           ))}
         </div>
       </Field>
 
-      <Field label="Date" htmlFor="date">
+      <Field label={t("common.date")} htmlFor="date">
         <input
           id="date"
           type="date"
@@ -160,7 +162,7 @@ function AddRecordForm() {
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label={type === "harvest" ? "Amount harvested" : "Quantity (optional)"} htmlFor="qty">
+        <Field label={type === "harvest" ? t("addRecord.amountHarvested") : t("addRecord.quantityOptional")} htmlFor="qty">
           <input
             id="qty"
             type="number"
@@ -172,11 +174,11 @@ function AddRecordForm() {
               setQuantity(e.target.value);
               updateCalc(e.target.value, unitPrice);
             }}
-            placeholder="e.g. 50"
+            placeholder={t("addRecord.qtyPlaceholder")}
             className={inputClass}
           />
         </Field>
-        <Field label="Unit" htmlFor="unit">
+        <Field label={t("addRecord.unit")} htmlFor="unit">
           <div className="relative">
             <select
               id="unit"
@@ -185,7 +187,9 @@ function AddRecordForm() {
               className={`${inputClass} appearance-none pr-10`}
             >
               {UNITS.map((u) => (
-                <option key={u}>{u}</option>
+                <option key={u} value={u}>
+                  {unitLabel(u)}
+                </option>
               ))}
             </select>
             <Icon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -195,7 +199,7 @@ function AddRecordForm() {
 
       {type !== "harvest" && (
         <>
-          <Field label="Price per unit (optional)" htmlFor="unit-price">
+          <Field label={t("addRecord.unitPrice")} htmlFor="unit-price">
             <input
               id="unit-price"
               type="number"
@@ -214,7 +218,7 @@ function AddRecordForm() {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <Field label="Total amount" htmlFor="amount">
+              <Field label={t("addRecord.totalAmount")} htmlFor="amount">
                 <input
                   id="amount"
                   type="number"
@@ -228,7 +232,7 @@ function AddRecordForm() {
                 />
               </Field>
             </div>
-            <Field label="Currency" htmlFor="currency">
+            <Field label={t("addRecord.currency")} htmlFor="currency">
               <div className="relative">
                 <select
                   id="currency"
@@ -246,14 +250,18 @@ function AddRecordForm() {
         </>
       )}
 
-      <Field label="Notes (optional)" htmlFor="notes">
+      <Field label={t("common.notesOptional")} htmlFor="notes">
         <textarea
           id="notes"
           rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder={
-            type === "harvest" ? "e.g. Stored in shed A" : type === "income" ? "e.g. Sold to GMB" : "e.g. AN top dressing"
+            type === "harvest"
+              ? t("addRecord.notesHarvest")
+              : type === "income"
+                ? t("addRecord.notesIncome")
+                : t("addRecord.notesExpense")
           }
           className={`${inputClass} resize-none`}
         />
@@ -263,19 +271,20 @@ function AddRecordForm() {
 
       <button
         type="submit"
-        className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg ${submitStyle}`}
+        className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg ${typeInfo.active}`}
       >
         <Icon name="save" />
-        Save {TYPES.find((t) => t.value === type)!.label}
+        {t(typeInfo.save)}
       </button>
     </form>
   );
 }
 
 export default function AddRecordPage() {
+  const { t } = useT();
   return (
     <div className="min-h-dvh pb-10">
-      <PageHeader title="Add Record" backHref="/farm-records" />
+      <PageHeader title={t("farm.addRecord")} backHref="/farm-records" />
       <Suspense>
         <AddRecordForm />
       </Suspense>

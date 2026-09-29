@@ -5,9 +5,11 @@ import { useState } from "react";
 import AuthLayout, { FormError } from "@/components/AuthLayout";
 import { Field, Icon, inputClass } from "@/components/ui";
 import { ApiError, login } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 import { actions, getState } from "@/lib/store";
 
 export default function LoginPage() {
+  const { t } = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +38,9 @@ export default function LoginPage() {
       });
       // AppShell redirects home once a profile exists.
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed.");
-      setOffline(err instanceof ApiError && err.status === 0);
+      const unreachable = err instanceof ApiError && err.status === 0;
+      setError(unreachable ? t("auth.unreachable") : err instanceof Error ? err.message : t("auth.signInFailed"));
+      setOffline(unreachable);
     } finally {
       setBusy(false);
     }
@@ -47,12 +50,12 @@ export default function LoginPage() {
     <AuthLayout
       icon="eco"
       title="KuraVisor"
-      subtitle="Offline crop doctor and farm assistant for smallholder farmers"
+      subtitle={t("auth.tagline")}
     >
-      <h2 className="text-lg font-bold mb-6">Welcome back</h2>
+      <h2 className="text-lg font-bold mb-6">{t("auth.welcomeBack")}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Email" htmlFor="email">
+        <Field label={t("auth.email")} htmlFor="email">
           <input
             id="email"
             type="email"
@@ -65,7 +68,7 @@ export default function LoginPage() {
           />
         </Field>
 
-        <Field label="Password" htmlFor="password">
+        <Field label={t("auth.password")} htmlFor="password">
           <div className="relative">
             <input
               id="password"
@@ -74,13 +77,13 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
+              placeholder={t("auth.passwordPlaceholder")}
               className={`${inputClass} pr-12`}
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               className="absolute right-2 top-1/2 -translate-y-1/2 size-9 flex items-center justify-center rounded-full text-slate-500 icon-btn"
             >
               <Icon name={showPassword ? "visibility_off" : "visibility"} className="text-xl" />
@@ -91,11 +94,10 @@ export default function LoginPage() {
         <FormError message={error} />
         {offline && (
           <p className="text-sm text-slate-500">
-            No connection? You can{" "}
+            {t("auth.noConnection")}{" "}
             <Link href="/register?offline=1" className="text-brand font-bold">
-              use KuraVisor offline
-            </Link>{" "}
-            and sign in later.
+              {t("auth.useOffline")}
+            </Link>
           </p>
         )}
 
@@ -105,14 +107,14 @@ export default function LoginPage() {
           className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-60"
         >
           <Icon name={busy ? "progress_activity" : "login"} className={busy ? "animate-spin" : ""} />
-          {busy ? "Signing in…" : "Sign In"}
+          {busy ? t("auth.signingIn") : t("auth.signIn")}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        Don&apos;t have an account?{" "}
+        {t("auth.noAccount")}{" "}
         <Link href="/register" className="text-brand font-bold">
-          Register
+          {t("auth.register")}
         </Link>
       </p>
     </AuthLayout>

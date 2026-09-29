@@ -9,12 +9,21 @@ import RecordRow from "@/components/RecordRow";
 import { EmptyState, SectionTitle } from "@/components/ui";
 import { computeTotals, pick, sortRecordsNewestFirst } from "@/lib/farm";
 import { formatNumber } from "@/lib/format";
+import { useT, type MessageKey } from "@/lib/i18n";
 import { useAppState, type RecordType } from "@/lib/store";
 
 type Filter = "all" | RecordType;
 
+const FILTER_LABEL: Record<Filter, MessageKey> = {
+  all: "common.all",
+  expense: "record.expenses",
+  income: "record.incomes",
+  harvest: "record.harvests",
+};
+
 export default function FarmRecordsPage() {
   const { plots, records, settings } = useAppState();
+  const { t, crop } = useT();
   const currency = settings.currency;
   const [filter, setFilter] = useState<Filter>("all");
 
@@ -28,7 +37,7 @@ export default function FarmRecordsPage() {
     () => sortRecordsNewestFirst(filter === "all" ? records : records.filter((r) => r.type === filter)).slice(0, 12),
     [records, filter],
   );
-  const plotName = (id: string) => plots.find((p) => p.id === id)?.name ?? "Deleted plot";
+  const plotName = (id: string) => plots.find((p) => p.id === id)?.name ?? t("farm.deletedPlot");
 
   const sortedPlots = [...plots].sort(
     (a, b) => (a.status === b.status ? a.name.localeCompare(b.name) : a.status === "active" ? -1 : 1),
@@ -39,17 +48,17 @@ export default function FarmRecordsPage() {
   return (
     <div className="min-h-dvh pb-28">
       <PageHeader
-        title="Farm Records"
+        title={t("farm.title")}
         subtitle={
           plots.length
-            ? `${plots.length} plot${plots.length === 1 ? "" : "s"} · ${active} active`
-            : "Track money and harvests per plot"
+            ? t("farm.subtitle", { count: plots.length, active })
+            : t("farm.subtitleEmpty")
         }
         rightAction={
           <>
-            <HeaderIconLink href="/farm-records/plots/new" icon="add_location_alt" label="New plot" />
+            <HeaderIconLink href="/farm-records/plots/new" icon="add_location_alt" label={t("farm.newPlot")} />
             {plots.length > 0 && (
-              <HeaderIconLink href="/farm-records/add" icon="add" label="Add record" primary />
+              <HeaderIconLink href="/farm-records/add" icon="add" label={t("farm.addRecord")} primary />
             )}
           </>
         }
@@ -59,22 +68,22 @@ export default function FarmRecordsPage() {
         <div className="px-4 mt-6">
           <EmptyState
             icon="potted_plant"
-            title="No plots yet"
-            text="Add each field or garden you farm. Then record what you spend, sell and harvest on it to see your profit."
-            action={{ href: "/farm-records/plots/new", label: "Add your first plot", icon: "add" }}
+            title={t("farm.emptyTitle")}
+            text={t("farm.emptyText")}
+            action={{ href: "/farm-records/plots/new", label: t("home.setupPlot"), icon: "add" }}
           />
         </div>
       ) : (
         <>
           <section className="px-4 mt-4 mb-6 grid grid-cols-3 gap-3">
             <div className="bg-white dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-              <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Spent</p>
+              <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("money.spent")}</p>
               <p className="text-lg font-bold text-rose-600 dark:text-rose-400 leading-tight">
                 <Money totals={totals.expenses} currency={currency} />
               </p>
             </div>
             <div className="bg-white dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-              <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Earned</p>
+              <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("money.earned")}</p>
               <p className="text-lg font-bold text-brand leading-tight">
                 <Money totals={totals.income} currency={currency} />
               </p>
@@ -84,7 +93,7 @@ export default function FarmRecordsPage() {
                 profit >= 0 ? "bg-primary text-background-dark glow" : "bg-rose-600 text-white"
               }`}
             >
-              <p className="text-[10px] font-bold uppercase opacity-70 mb-1">Profit</p>
+              <p className="text-[10px] font-bold uppercase opacity-70 mb-1">{t("money.profit")}</p>
               <p className="text-lg font-bold leading-tight">
                 <Money totals={totals.profit} currency={currency} subClassName="text-[11px] opacity-70" />
               </p>
@@ -92,11 +101,11 @@ export default function FarmRecordsPage() {
           </section>
 
           <section className="px-4 mb-7">
-            <SectionTitle>Plots</SectionTitle>
+            <SectionTitle>{t("farm.plots")}</SectionTitle>
             <div className="space-y-3">
               {sortedPlots.map((plot) => {
-                const t = computeTotals(byPlot.get(plot.id) ?? []);
-                const net = pick(t.profit, currency);
+                const pt = computeTotals(byPlot.get(plot.id) ?? []);
+                const net = pick(pt.profit, currency);
                 return (
                   <Link
                     key={plot.id}
@@ -107,7 +116,7 @@ export default function FarmRecordsPage() {
                       <div className="min-w-0">
                         <p className="font-bold truncate">{plot.name}</p>
                         <p className="text-xs text-slate-500">
-                          {plot.crop} · {formatNumber(plot.sizeHa, 2)} ha · {plot.season}
+                          {crop(plot.crop)} · {formatNumber(plot.sizeHa, 2)} ha · {plot.season}
                         </p>
                       </div>
                       <span
@@ -117,26 +126,26 @@ export default function FarmRecordsPage() {
                             : "bg-slate-100 dark:bg-white/10 text-slate-500"
                         }`}
                       >
-                        {plot.status}
+                        {t(plot.status === "active" ? "plot.active" : "plot.completed")}
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">Spent</p>
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">{t("money.spent")}</p>
                         <p className="text-sm font-bold text-rose-600 dark:text-rose-400">
-                          <Money totals={t.expenses} currency={currency} />
+                          <Money totals={pt.expenses} currency={currency} />
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">Earned</p>
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">{t("money.earned")}</p>
                         <p className="text-sm font-bold text-brand">
-                          <Money totals={t.income} currency={currency} />
+                          <Money totals={pt.income} currency={currency} />
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">Net</p>
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">{t("money.net")}</p>
                         <p className={`text-sm font-bold ${net >= 0 ? "text-brand" : "text-rose-600 dark:text-rose-400"}`}>
-                          <Money totals={t.profit} currency={currency} signed />
+                          <Money totals={pt.profit} currency={currency} signed />
                         </p>
                       </div>
                     </div>
@@ -147,7 +156,7 @@ export default function FarmRecordsPage() {
           </section>
 
           <section className="px-4 mb-6">
-            <SectionTitle>Recent records</SectionTitle>
+            <SectionTitle>{t("farm.recentRecords")}</SectionTitle>
             <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar">
               {(["all", "expense", "income", "harvest"] as Filter[]).map((f) => (
                 <button
@@ -155,22 +164,22 @@ export default function FarmRecordsPage() {
                   type="button"
                   aria-pressed={filter === f}
                   onClick={() => setFilter(f)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold shrink-0 capitalize transition-colors ${
+                  className={`px-4 py-2 rounded-full text-xs font-bold shrink-0 transition-colors ${
                     filter === f
                       ? "bg-primary text-background-dark"
                       : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10"
                   }`}
                 >
-                  {f === "all" ? "All" : `${f}s`}
+                  {t(FILTER_LABEL[f])}
                 </button>
               ))}
             </div>
             {recent.length === 0 ? (
               <EmptyState
                 icon="receipt_long"
-                title="Nothing recorded yet"
-                text="Add seeds, fertilizer, labour, sales and harvests as they happen."
-                action={{ href: "/farm-records/add", label: "Add a record", icon: "add" }}
+                title={t("farm.noRecordsTitle")}
+                text={t("farm.noRecordsText")}
+                action={{ href: "/farm-records/add", label: t("farm.addRecord"), icon: "add" }}
               />
             ) : (
               <div className="space-y-2">
