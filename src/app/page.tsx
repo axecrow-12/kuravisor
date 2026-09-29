@@ -7,12 +7,12 @@ import { Icon, SectionTitle } from "@/components/ui";
 import { computeTotals, pick } from "@/lib/farm";
 import { daysFromToday, formatMoney, greetingKey, initials, todayISO } from "@/lib/format";
 import { useT } from "@/lib/i18n";
-import { getCondition, tipOfTheDay } from "@/lib/library";
+import { getCondition, localizeCondition, tipOfTheDay } from "@/lib/library";
 import { actions, useAppState } from "@/lib/store";
 
 export default function Home() {
   const { profile, plots, records, tasks, scans, settings } = useAppState();
-  const { t, crop, ago, relDay, longToday } = useT();
+  const { t, lang, crop, ago, relDay, longToday } = useT();
   const today = todayISO();
 
   const activePlots = useMemo(() => plots.filter((p) => p.status === "active"), [plots]);
@@ -28,7 +28,8 @@ export default function Home() {
   const dueCount = openTasks.filter((task) => task.date <= today).length;
   const lastScan = scans[0];
   const alertScan = scans.find((s) => s.matches.length > 0 && daysFromToday(s.createdAt) >= -14);
-  const alertCondition = alertScan && getCondition(alertScan.matches[0].id);
+  const alertBase = alertScan && getCondition(alertScan.matches[0].id);
+  const alertCondition = alertBase && localizeCondition(alertBase, lang);
 
   const setup = [
     { done: plots.length > 0, label: t("home.setupPlot"), href: "/farm-records/plots/new", icon: "add_location_alt" },
@@ -197,7 +198,7 @@ export default function Home() {
             <Icon name="lightbulb" className="text-brand" filled />
             <h2 className="font-bold">{t("home.tipOfTheDay")}</h2>
           </div>
-          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{tipOfTheDay()}</p>
+          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{tipOfTheDay(lang)}</p>
         </section>
 
         <section>

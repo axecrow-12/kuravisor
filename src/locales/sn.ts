@@ -19,8 +19,12 @@ const sn: Record<MessageKey, string> = {
   "common.seeAll": "Ona zvese",
   "common.view": "Ona",
   "common.mayBeDeleted": "Zvinogona kunge zvakadzimwa.",
-  "common.englishOnly":
-    "Mazano ehutano hwezvirimwa ari muChirungu parizvino, kusvikira atariswa nenyanzvi dzemuno.",
+
+  // Crop health library notice
+  "library.unreviewed":
+    "Mazano aya ehutano hwezvirimwa akashandurirwa uye haasati atariswa nenyanzvi yezvekurima. Nguva dzose tevera zvakanyorwa pamushonga nemazano eAGRITEX.",
+  "library.readEnglish": "Verenga muChirungu",
+  "library.readLocal": "Verenga muchiShona",
 
   // Navigation
   "nav.main": "Menyu huru",

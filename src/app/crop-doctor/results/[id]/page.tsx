@@ -6,10 +6,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
-import { Card, EmptyState, EnglishOnlyNote, Icon } from "@/components/ui";
+import { Card, EmptyState, Icon, LibraryNotice } from "@/components/ui";
 import { todayISO } from "@/lib/format";
-import { useT } from "@/lib/i18n";
-import { getCondition, symptomLabel } from "@/lib/library";
+import { useLibrary, useT } from "@/lib/i18n";
 import { actions, useAppState } from "@/lib/store";
 
 const SEVERITY_STYLE = {
@@ -23,6 +22,7 @@ export default function ScanResultsPage() {
   const router = useRouter();
   const { scans, plots } = useAppState();
   const { t, crop, date } = useT();
+  const lib = useLibrary();
   const scan = scans.find((s) => s.id === id);
   const [reminded, setReminded] = useState(false);
 
@@ -44,9 +44,9 @@ export default function ScanResultsPage() {
   }
 
   const healthy = scan.symptoms.length === 0;
-  const top = scan.matches[0] ? getCondition(scan.matches[0].id) : undefined;
+  const top = scan.matches[0] ? lib.conditionById(scan.matches[0].id) : undefined;
   const others = scan.matches.slice(1).flatMap((m) => {
-    const c = getCondition(m.id);
+    const c = lib.conditionById(m.id);
     return c ? [{ condition: c, score: m.score }] : [];
   });
   const plot = plots.find((p) => p.id === scan.plotId);
@@ -158,7 +158,7 @@ export default function ScanResultsPage() {
               </p>
             </div>
 
-            <EnglishOnlyNote className="" />
+            <LibraryNotice lib={lib} className="" />
 
             <Card className="p-5">
               <h3 className="text-lg font-bold mb-2">{t("results.whatIsThis")}</h3>
@@ -229,7 +229,7 @@ export default function ScanResultsPage() {
             <div className="flex flex-wrap gap-2">
               {scan.symptoms.map((s) => (
                 <span key={s} className="text-xs bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-full">
-                  {symptomLabel(s)}
+                  {lib.symptom(s)}
                 </span>
               ))}
             </div>

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import PageHeader, { HeaderIconLink } from "@/components/PageHeader";
-import { EnglishOnlyNote, Icon } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { Icon, LibraryNotice } from "@/components/ui";
+import { useLibrary, useT } from "@/lib/i18n";
 import { getCondition } from "@/lib/library";
 
 const BANNER = {
@@ -15,7 +15,8 @@ const BANNER = {
 
 export default function TreatmentView({ id }: { id: string }) {
   const { t, crop } = useT();
-  const c = getCondition(id)!;
+  const lib = useLibrary();
+  const c = lib.condition(getCondition(id)!);
 
   return (
     <div className="min-h-dvh pb-28">
@@ -27,7 +28,7 @@ export default function TreatmentView({ id }: { id: string }) {
       />
 
       <section className="px-4 mt-4 mb-6 space-y-3">
-        <EnglishOnlyNote className="" />
+        <LibraryNotice lib={lib} className="" />
         <div className={`p-4 rounded-2xl flex items-center gap-3 card ${BANNER[c.severity]}`}>
           <div className="size-12 bg-white/20 rounded-full flex items-center justify-center shrink-0">
             <Icon name="priority_high" className="text-2xl" />

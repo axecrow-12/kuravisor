@@ -3,15 +3,15 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { useT, type Translator } from "@/lib/i18n";
-import { getCondition } from "@/lib/library";
-import type { Scan } from "@/lib/store";
+import { getCondition, localizeCondition } from "@/lib/library";
+import type { Language, Scan } from "@/lib/store";
 import { Icon } from "./ui";
 
-export function scanOutcome(scan: Scan, t: Translator) {
+export function scanOutcome(scan: Scan, t: Translator, lang: Language = "en") {
   if (scan.symptoms.length === 0) return { label: t("scan.healthy"), tone: "good" as const };
   const top = scan.matches[0] && getCondition(scan.matches[0].id);
   if (!top) return { label: t("scan.noMatch"), tone: "unknown" as const };
-  return { label: top.name, tone: top.severity === "high" ? ("bad" as const) : ("warn" as const) };
+  return { label: localizeCondition(top, lang).name, tone: top.severity === "high" ? ("bad" as const) : ("warn" as const) };
 }
 
 const TONE = {
@@ -22,8 +22,8 @@ const TONE = {
 };
 
 export default function ScanRow({ scan }: { scan: Scan }) {
-  const { t, crop, ago } = useT();
-  const outcome = scanOutcome(scan, t);
+  const { t, lang, crop, ago } = useT();
+  const outcome = scanOutcome(scan, t, lang);
   const tone = TONE[outcome.tone];
   return (
     <Link
