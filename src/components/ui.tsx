@@ -83,7 +83,7 @@ export function EmptyState({
   action?: { href?: string; onClick?: () => void; label: string; icon?: string };
 }) {
   const btnClass =
-    "mt-4 inline-flex items-center gap-2 bg-primary text-background-dark font-bold text-sm px-5 py-3 rounded-xl btn-glow";
+    "mt-4 inline-flex items-center gap-2 bg-primary text-on-primary font-bold text-sm px-5 py-3 rounded-xl btn-glow";
   return (
     <div className="text-center py-10 px-6 bg-white/60 dark:bg-white/5 rounded-2xl border border-dashed border-slate-300 dark:border-white/10">
       <div className="size-14 rounded-full bg-primary/10 text-brand flex items-center justify-center mx-auto mb-3">
@@ -206,7 +206,7 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={`py-3 rounded-xl font-bold text-sm border-2 transition-colors ${
             value === o.value
-              ? "bg-primary text-background-dark border-primary"
+              ? "bg-primary text-on-primary border-primary"
               : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border-transparent chip-hover"
           } ${o.className ?? ""}`}
         >

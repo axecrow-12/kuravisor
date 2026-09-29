@@ -77,23 +77,23 @@ export default function FarmRecordsPage() {
         <>
           <section className="px-4 mt-4 mb-6 grid grid-cols-3 gap-3">
             <div className="bg-white dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-              <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("money.spent")}</p>
+              <p className="text-[11px] font-bold uppercase text-slate-500 mb-1">{t("money.spent")}</p>
               <p className="text-lg font-bold text-rose-600 dark:text-rose-400 leading-tight">
                 <Money totals={totals.expenses} currency={currency} />
               </p>
             </div>
             <div className="bg-white dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-              <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("money.earned")}</p>
+              <p className="text-[11px] font-bold uppercase text-slate-500 mb-1">{t("money.earned")}</p>
               <p className="text-lg font-bold text-brand leading-tight">
                 <Money totals={totals.income} currency={currency} />
               </p>
             </div>
             <div
               className={`p-3 rounded-2xl text-center ${
-                profit >= 0 ? "bg-primary text-background-dark glow" : "bg-rose-600 text-white"
+                profit >= 0 ? "bg-gradient-to-br from-primary to-emerald-900 text-on-primary glow" : "bg-gradient-to-br from-rose-600 to-rose-800 text-white"
               }`}
             >
-              <p className="text-[10px] font-bold uppercase opacity-70 mb-1">{t("money.profit")}</p>
+              <p className="text-[11px] font-bold uppercase opacity-70 mb-1">{t("money.profit")}</p>
               <p className="text-lg font-bold leading-tight">
                 <Money totals={totals.profit} currency={currency} subClassName="text-[11px] opacity-70" />
               </p>
@@ -120,7 +120,7 @@ export default function FarmRecordsPage() {
                         </p>
                       </div>
                       <span
-                        className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full shrink-0 ${
+                        className={`text-[11px] font-bold uppercase px-2 py-1 rounded-full shrink-0 ${
                           plot.status === "active"
                             ? "bg-primary/15 text-brand"
                             : "bg-slate-100 dark:bg-white/10 text-slate-500"
@@ -131,19 +131,19 @@ export default function FarmRecordsPage() {
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">{t("money.spent")}</p>
+                        <p className="text-[11px] text-slate-500 uppercase font-bold">{t("money.spent")}</p>
                         <p className="text-sm font-bold text-rose-600 dark:text-rose-400">
                           <Money totals={pt.expenses} currency={currency} />
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">{t("money.earned")}</p>
+                        <p className="text-[11px] text-slate-500 uppercase font-bold">{t("money.earned")}</p>
                         <p className="text-sm font-bold text-brand">
                           <Money totals={pt.income} currency={currency} />
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">{t("money.net")}</p>
+                        <p className="text-[11px] text-slate-500 uppercase font-bold">{t("money.net")}</p>
                         <p className={`text-sm font-bold ${net >= 0 ? "text-brand" : "text-rose-600 dark:text-rose-400"}`}>
                           <Money totals={pt.profit} currency={currency} signed />
                         </p>
@@ -166,7 +166,7 @@ export default function FarmRecordsPage() {
                   onClick={() => setFilter(f)}
                   className={`px-4 py-2 rounded-full text-xs font-bold shrink-0 transition-colors ${
                     filter === f
-                      ? "bg-primary text-background-dark"
+                      ? "bg-primary text-on-primary"
                       : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10"
                   }`}
                 >

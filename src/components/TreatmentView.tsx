@@ -50,7 +50,7 @@ export default function TreatmentView({ id }: { id: string }) {
         <ol className="bg-white dark:bg-white/5 p-5 rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 card">
           {c.firstSteps.map((s, i) => (
             <li key={s} className="flex items-start gap-3">
-              <span className="size-6 rounded-full bg-primary text-background-dark text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              <span className="size-6 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                 {i + 1}
               </span>
               <p className="text-sm">{s}</p>
@@ -68,15 +68,15 @@ export default function TreatmentView({ id }: { id: string }) {
           <div className="bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden card">
             <dl className="p-5 space-y-4">
               <div>
-                <dt className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("treatment.activeIngredients")}</dt>
+                <dt className="text-[11px] font-bold uppercase text-slate-500 mb-1">{t("treatment.activeIngredients")}</dt>
                 <dd className="text-sm font-bold">{c.chemical.activeIngredients}</dd>
               </div>
               <div>
-                <dt className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("treatment.howToApply")}</dt>
+                <dt className="text-[11px] font-bold uppercase text-slate-500 mb-1">{t("treatment.howToApply")}</dt>
                 <dd className="text-sm">{c.chemical.application}</dd>
               </div>
               <div>
-                <dt className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("treatment.when")}</dt>
+                <dt className="text-[11px] font-bold uppercase text-slate-500 mb-1">{t("treatment.when")}</dt>
                 <dd className="text-sm">{c.chemical.timing}</dd>
               </div>
             </dl>
@@ -129,7 +129,7 @@ export default function TreatmentView({ id }: { id: string }) {
       <section className="px-4 space-y-2">
         <Link
           href="/agro-dealers"
-          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
+          className="w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
         >
           <Icon name="storefront" />
           {t("results.findDealer")}

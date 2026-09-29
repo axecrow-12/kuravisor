@@ -52,7 +52,7 @@ export function HeaderIconLink({
       aria-label={label}
       title={label}
       className={`size-10 flex items-center justify-center rounded-full ${
-        primary ? "bg-primary text-background-dark glow" : "bg-slate-200/60 dark:bg-white/10 icon-btn"
+        primary ? "bg-primary text-on-primary glow" : "bg-slate-200/60 dark:bg-white/10 icon-btn"
       }`}
     >
       <Icon name={icon} className="text-xl" />

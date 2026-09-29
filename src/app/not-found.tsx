@@ -13,7 +13,7 @@ export default function NotFound() {
       </div>
       <h1 className="text-2xl font-bold mb-2">{t("notFound.title")}</h1>
       <p className="text-sm text-slate-500 mb-6">{t("notFound.text")}</p>
-      <Link href="/" className="bg-primary text-background-dark font-bold px-6 py-3 rounded-xl btn-glow">
+      <Link href="/" className="bg-primary text-on-primary font-bold px-6 py-3 rounded-xl btn-glow">
         {t("notFound.home")}
       </Link>
     </div>

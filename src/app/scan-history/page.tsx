@@ -33,7 +33,7 @@ export default function ScanHistoryPage() {
   const chip = (active: boolean) =>
     `px-4 py-2 text-xs font-bold rounded-full shrink-0 transition-colors ${
       active
-        ? "bg-primary text-background-dark"
+        ? "bg-primary text-on-primary"
         : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10"
     }`;
 

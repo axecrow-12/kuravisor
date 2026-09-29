@@ -109,7 +109,7 @@ export default function PlotForm({
 
       <button
         type="submit"
-        className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
+        className="w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
       >
         <Icon name="save" />
         {submitLabel}
