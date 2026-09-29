@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId } from "react";
-import { useT } from "@/lib/i18n";
+import { useT, type Library } from "@/lib/i18n";
 
 export function Icon({
   name,
@@ -234,16 +234,23 @@ export function Card({
 }
 
 /**
- * Crop health guidance (symptoms, treatments, guides) is only in English
- * until it has been translated and checked by a native speaking agronomist.
+ * Shown above crop health content in Shona or Ndebele: the library
+ * translation is unreviewed, so farmers can switch that screen to English.
  */
-export function EnglishOnlyNote({ className = "mb-3" }: { className?: string }) {
-  const { t, lang } = useT();
-  if (lang === "en") return null;
+export function LibraryNotice({ lib, className = "mb-3" }: { lib: Library; className?: string }) {
+  const { t } = useT();
+  if (lib.uiLang === "en") return null;
   return (
-    <p className={`flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-3 ${className}`}>
+    <div
+      className={`flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-3 ${className}`}
+    >
       <Icon name="translate" className="text-base text-amber-600" />
-      {t("common.englishOnly")}
-    </p>
+      <div className="flex-1">
+        <p>{t("library.unreviewed")}</p>
+        <button type="button" onClick={lib.toggleEnglish} className="mt-1.5 font-bold text-brand underline">
+          {lib.english ? t("library.readLocal") : t("library.readEnglish")}
+        </button>
+      </div>
+    </div>
   );
 }

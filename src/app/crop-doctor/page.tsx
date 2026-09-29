@@ -7,8 +7,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader, { HeaderIconLink } from "@/components/PageHeader";
 import ScanRow from "@/components/ScanRow";
-import { EnglishOnlyNote, Icon, SectionTitle } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { Icon, LibraryNotice, SectionTitle } from "@/components/ui";
+import { useLibrary, useT } from "@/lib/i18n";
 import { toThumbnail } from "@/lib/image";
 import { CROPS, diagnose, symptomsForCrop } from "@/lib/library";
 import { actions, useAppState } from "@/lib/store";
@@ -31,6 +31,7 @@ export default function CropDoctorPage() {
   const router = useRouter();
   const { scans, plots } = useAppState();
   const { t, crop: cropName } = useT();
+  const lib = useLibrary();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const galleryRef = useRef<HTMLInputElement | null>(null);
@@ -232,7 +233,7 @@ export default function CropDoctorPage() {
       {crop && (
         <section className="px-4 mb-7 animate-fade">
           <StepTitle n={3} title={t("doctor.step3")} hint={t("doctor.step3Hint")} />
-          <EnglishOnlyNote />
+          <LibraryNotice lib={lib} />
           <div className="space-y-2">
             {symptoms.map((s) => {
               const on = picked.includes(s.id);
@@ -256,7 +257,7 @@ export default function CropDoctorPage() {
                   >
                     {on && <Icon name="check" className="text-base font-bold" />}
                   </span>
-                  <span className="text-sm font-medium">{s.label}</span>
+                  <span className="text-sm font-medium">{lib.symptom(s.id)}</span>
                 </button>
               );
             })}

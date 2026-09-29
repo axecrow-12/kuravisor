@@ -19,8 +19,12 @@ const nd: Record<MessageKey, string> = {
   "common.seeAll": "Bona konke",
   "common.view": "Bona",
   "common.mayBeDeleted": "Kungenzeka ukuthi kususiwe.",
-  "common.englishOnly":
-    "Iseluleko sempilo yezilimo sisesiNgisini okwakhathesi, size sihlolwe yingcitshi zalapha.",
+
+  // Crop health library notice
+  "library.unreviewed":
+    "Lesi siqondiso sempilo yezilimo sihunyushiwe njalo kasikahlolwa yingcitshi yezolimo. Landela ngaso sonke isikhathi okubhalwe emuthini leseluleko se AGRITEX.",
+  "library.readEnglish": "Funda ngesiNgisi",
+  "library.readLocal": "Funda ngesiNdebele",
 
   // Navigation
   "nav.main": "Imenyu enkulu",

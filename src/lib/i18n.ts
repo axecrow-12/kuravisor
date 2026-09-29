@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import en, { type MessageKey } from "@/locales/en";
 import nd from "@/locales/nd";
 import sn from "@/locales/sn";
@@ -11,6 +11,14 @@ import {
   relativeDay,
   timeAgo,
 } from "./format";
+import {
+  getCondition,
+  localizeCondition,
+  localizeGuide,
+  localizeSymptom,
+  type Condition,
+  type Guide,
+} from "./library";
 import { useAppState, type Language } from "./store";
 
 export type { MessageKey };
@@ -70,3 +78,31 @@ export function useT() {
 }
 
 export type Translator = ReturnType<typeof useT>["t"];
+
+/**
+ * Crop health library content in the chosen language, with a per-screen
+ * switch to read the English original (the translations are unreviewed).
+ */
+export function useLibrary() {
+  const { lang } = useT();
+  const [english, setEnglish] = useState(false);
+  const libLang: Language = english ? "en" : lang;
+  return useMemo(
+    () => ({
+      lang: libLang,
+      uiLang: lang,
+      english,
+      toggleEnglish: () => setEnglish((v) => !v),
+      condition: (c: Condition) => localizeCondition(c, libLang),
+      conditionById: (id: string) => {
+        const c = getCondition(id);
+        return c && localizeCondition(c, libLang);
+      },
+      symptom: (id: string) => localizeSymptom(id, libLang),
+      guide: (g: Guide) => localizeGuide(g, libLang),
+    }),
+    [lang, libLang, english],
+  );
+}
+
+export type Library = ReturnType<typeof useLibrary>;

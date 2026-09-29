@@ -24,9 +24,9 @@ The app is available in English, chiShona and isiNdebele. Farmers pick a languag
 2. Components read text through `useT()` from `src/lib/i18n.ts`, which also formats dates with local month and weekday names.
 3. Crop names, record categories, units, severity and task types are translated. Farm data is always stored in English so it stays the same whatever language is shown.
 
-**Not yet translated:** the crop health library in `src/lib/library.ts` (symptoms, diagnoses, treatments, pesticide safety, guides and daily tips). A wrong translation of pesticide or diagnosis advice could cause harm, so it stays in English until a native speaking agronomist can translate and check it. The app shows a notice about this on those screens when Shona or Ndebele is selected.
+**Crop health library:** symptoms, diagnoses, treatments, spray safety, guides and daily tips are translated in `src/locales/library/sn.ts` and `nd.ts`, following the structure of `src/lib/library.ts`. Active ingredient names, product names and every number stay exactly as in English, and pest and disease names keep the English name in brackets so farmers can match them to product labels. Any missing text, or a list whose length differs from the English one, falls back to English so treatment steps can never be misaligned.
 
-**Review needed:** the Shona and Ndebele interface text has not yet been reviewed by native speakers. Please have both files checked before release.
+**Review needed:** none of the Shona or Ndebele text has been reviewed by native speakers yet, and the crop health translations also need an agronomist, especially spray safety and treatment steps. Until then, every crop health screen shows a notice in Shona and Ndebele with a one tap switch to read that screen in English.
 
 ## How data is stored
 
@@ -66,7 +66,7 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 | `src/lib/farm.ts` | Money and harvest calculations, CSV helpers |
 | `src/lib/api.ts` | Backend client |
 | `src/lib/i18n.ts` | Translation hook and helpers |
-| `src/locales` | English, Shona and Ndebele interface text |
+| `src/locales` | English, Shona and Ndebele interface text, plus `library/` translations of the crop health library |
 | `backend` | Express and Prisma API for accounts |
 
 ## Checks

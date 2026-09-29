@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
-import { EnglishOnlyNote, Icon } from "@/components/ui";
-import { useT, type MessageKey } from "@/lib/i18n";
+import { Icon, LibraryNotice } from "@/components/ui";
+import { useLibrary, useT, type Library, type MessageKey } from "@/lib/i18n";
 import { CONDITIONS, GUIDES, type ConditionType } from "@/lib/library";
 
 type Category = "all" | ConditionType | "practice";
@@ -26,46 +26,61 @@ const ICON: Record<Category, string> = {
   practice: "agriculture",
 };
 
-const ARTICLES = [
-  ...CONDITIONS.map((c) => ({
-    id: c.id,
-    title: c.name,
-    category: c.type as Category,
-    icon: ICON[c.type],
-    summary: c.summary,
-    crops: c.crops,
-  })),
-  ...GUIDES.map((g) => ({
-    id: g.id,
-    title: g.title,
-    category: "practice" as Category,
-    icon: g.icon,
-    summary: g.summary,
-    crops: [] as string[],
-  })),
-];
+const ARTICLE_COUNT = CONDITIONS.length + GUIDES.length;
+
+function buildArticles(lib: Library) {
+  return [
+    ...CONDITIONS.map((c) => {
+      const tr = lib.condition(c);
+      return {
+        id: c.id,
+        title: tr.name,
+        category: c.type as Category,
+        icon: ICON[c.type],
+        summary: tr.summary,
+        crops: c.crops,
+        // English text stays searchable in every language.
+        searchText: `${tr.name} ${tr.summary} ${c.name} ${c.summary}`,
+      };
+    }),
+    ...GUIDES.map((g) => {
+      const tr = lib.guide(g);
+      return {
+        id: g.id,
+        title: tr.title,
+        category: "practice" as Category,
+        icon: g.icon,
+        summary: tr.summary,
+        crops: [] as string[],
+        searchText: `${tr.title} ${tr.summary} ${g.title} ${g.summary}`,
+      };
+    }),
+  ];
+}
 
 export default function KnowledgeBasePage() {
   const { t, crop } = useT();
+  const lib = useLibrary();
+  const articles = useMemo(() => buildArticles(lib), [lib]);
   const [category, setCategory] = useState<Category>("all");
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return ARTICLES.filter(
+    return articles.filter(
       (a) =>
         (category === "all" || a.category === category) &&
         (!q ||
           // Match crop names in English and in the chosen language.
-          `${a.title} ${a.summary} ${a.crops.join(" ")} ${a.crops.map(crop).join(" ")}`
+          `${a.searchText} ${a.crops.join(" ")} ${a.crops.map(crop).join(" ")}`
             .toLowerCase()
             .includes(q)),
     );
-  }, [category, query, crop]);
+  }, [articles, category, query, crop]);
 
   return (
     <div className="min-h-dvh pb-28">
-      <PageHeader title={t("kb.title")} subtitle={t("kb.subtitle", { count: ARTICLES.length })} backHref="/" />
+      <PageHeader title={t("kb.title")} subtitle={t("kb.subtitle", { count: ARTICLE_COUNT })} backHref="/" />
 
       <section className="px-4 mt-4 mb-3">
         <label className="flex items-center gap-3 bg-white dark:bg-white/5 rounded-xl px-3 py-3 border border-slate-200 dark:border-white/10 input-glow">
@@ -81,7 +96,7 @@ export default function KnowledgeBasePage() {
       </section>
 
       <section className="px-4 mb-4">
-        <EnglishOnlyNote />
+        <LibraryNotice lib={lib} />
         <div className="flex gap-2 overflow-x-auto no-scrollbar">
           {CATEGORY_TABS.map((cat) => (
             <button

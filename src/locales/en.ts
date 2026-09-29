@@ -19,8 +19,12 @@ const en = {
   "common.seeAll": "See all",
   "common.view": "View",
   "common.mayBeDeleted": "It may have been deleted.",
-  "common.englishOnly":
-    "Crop health advice is shown in English for now, until it has been checked by local experts.",
+
+  // Crop health library notice
+  "library.unreviewed":
+    "This crop health advice was translated and has not yet been checked by an agronomist. Always follow the product label and AGRITEX advice.",
+  "library.readEnglish": "Read in English",
+  "library.readLocal": "Read in your language",
 
   // Navigation
   "nav.main": "Main",

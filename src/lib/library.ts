@@ -1,3 +1,7 @@
+import libNd from "@/locales/library/nd";
+import libSn from "@/locales/library/sn";
+import type { Language } from "./store";
+
 /*
  * Offline crop health library. Drives the Crop Doctor symptom checker,
  * treatment plans and the knowledge base. Guidance is general; product
@@ -689,8 +693,115 @@ export const TIPS = [
   "Plant at the start of the rains. Early crops are usually less damaged by fall armyworm.",
 ];
 
-export function tipOfTheDay(): string {
+export function tipOfTheDay(lang: Language = "en"): string {
   const start = new Date(new Date().getFullYear(), 0, 0).getTime();
   const day = Math.floor((Date.now() - start) / 86_400_000);
-  return TIPS[day % TIPS.length];
+  const i = day % TIPS.length;
+  return TRANSLATIONS[lang]?.tips[i] ?? TIPS[i];
+}
+
+/*
+ * Translations of the library. English above is the source; sn and nd
+ * files mirror its structure. Chemical active ingredients, product names
+ * and numbers are never translated. Any missing text, or a list whose
+ * length differs from the English one, falls back to English so steps can
+ * never be misaligned.
+ */
+
+export interface ConditionText {
+  name: string;
+  urgency: string;
+  summary: string;
+  firstSteps: string[];
+  chemical?: { application: string; timing: string };
+  organic: { name: string; how: string }[];
+  prevention: string[];
+}
+
+export interface GuideText {
+  title: string;
+  summary: string;
+  sections: { heading: string; points: string[] }[];
+}
+
+export interface LibraryText {
+  spraySafety: string;
+  symptoms: Record<string, string>;
+  conditions: Record<string, ConditionText>;
+  guides: Record<string, GuideText>;
+  tips: string[];
+}
+
+const TRANSLATIONS: Partial<Record<Language, LibraryText>> = { sn: libSn, nd: libNd };
+
+/** Same length as the English list, or the English list. */
+function sameShape<T>(translated: T[] | undefined, english: T[]): T[] {
+  return translated && translated.length === english.length ? translated : english;
+}
+
+export function localizeSymptom(id: string, lang: Language): string {
+  return TRANSLATIONS[lang]?.symptoms[id] ?? symptomLabel(id);
+}
+
+export function localizeCondition(c: Condition, lang: Language): Condition {
+  const lib = TRANSLATIONS[lang];
+  const tr = lib?.conditions[c.id];
+  if (!lib || !tr) return c;
+  return {
+    ...c,
+    name: tr.name,
+    urgency: tr.urgency,
+    summary: tr.summary,
+    firstSteps: sameShape(tr.firstSteps, c.firstSteps),
+    chemical: c.chemical && {
+      ...c.chemical,
+      application: tr.chemical?.application ?? c.chemical.application,
+      timing: tr.chemical?.timing ?? c.chemical.timing,
+      safety: lib.spraySafety,
+    },
+    organic: sameShape(tr.organic, c.organic),
+    prevention: sameShape(tr.prevention, c.prevention),
+  };
+}
+
+export function localizeGuide(g: Guide, lang: Language): Guide {
+  const tr = TRANSLATIONS[lang]?.guides[g.id];
+  if (!tr) return g;
+  const sections = sameShape(tr.sections, g.sections).map((sec, i) =>
+    sec === g.sections[i] ? sec : { heading: sec.heading, points: sameShape(sec.points, g.sections[i].points) },
+  );
+  return { ...g, title: tr.title, summary: tr.summary, sections };
+}
+
+/** Lists what a language is missing, for checking new translations. */
+export function missingTranslations(lang: Language): string[] {
+  const lib = TRANSLATIONS[lang];
+  if (!lib) return lang === "en" ? [] : ["everything"];
+  const missing: string[] = [];
+  for (const s of SYMPTOMS) if (!lib.symptoms[s.id]) missing.push(`symptom ${s.id}`);
+  for (const c of CONDITIONS) {
+    const tr = lib.conditions[c.id];
+    if (!tr) {
+      missing.push(`condition ${c.id}`);
+      continue;
+    }
+    if (tr.firstSteps.length !== c.firstSteps.length) missing.push(`${c.id}.firstSteps length`);
+    if (tr.organic.length !== c.organic.length) missing.push(`${c.id}.organic length`);
+    if (tr.prevention.length !== c.prevention.length) missing.push(`${c.id}.prevention length`);
+    if (!!tr.chemical !== !!c.chemical) missing.push(`${c.id}.chemical`);
+  }
+  for (const g of GUIDES) {
+    const tr = lib.guides[g.id];
+    if (!tr) {
+      missing.push(`guide ${g.id}`);
+      continue;
+    }
+    if (tr.sections.length !== g.sections.length) missing.push(`${g.id}.sections length`);
+    tr.sections.forEach((sec, i) => {
+      if (g.sections[i] && sec.points.length !== g.sections[i].points.length)
+        missing.push(`${g.id}.sections[${i}].points length`);
+    });
+  }
+  if (lib.tips.length !== TIPS.length) missing.push("tips length");
+  return missing;
 }
