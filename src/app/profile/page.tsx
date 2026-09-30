@@ -93,7 +93,7 @@ export default function ProfilePage() {
           ].map((s) => (
             <div key={s.label} className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
               <p className="text-2xl font-bold text-brand">{s.n}</p>
-              <p className="text-[10px] font-bold uppercase text-slate-500 mt-1">{s.label}</p>
+              <p className="text-[11px] font-bold uppercase text-slate-500 mt-1">{s.label}</p>
             </div>
           ))}
         </div>
@@ -159,7 +159,7 @@ export default function ProfilePage() {
         <button
           type="submit"
           disabled={!dirty && !saved}
-          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-50 disabled:shadow-none"
+          className="w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-50 disabled:shadow-none"
         >
           <Icon name={saved ? "check" : "save"} />
           {saved ? t("common.saved") : t("common.saveChanges")}

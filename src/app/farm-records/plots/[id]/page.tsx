@@ -105,7 +105,7 @@ export default function PlotPage() {
       <section className="px-4 mt-4 mb-6">
         <div
           className={`p-5 rounded-2xl relative overflow-hidden mb-3 ${
-            net >= 0 ? "bg-primary text-background-dark glow" : "bg-rose-600 text-white"
+            net >= 0 ? "bg-gradient-to-br from-primary to-emerald-900 text-on-primary glow" : "bg-gradient-to-br from-rose-600 to-rose-800 text-white"
           }`}
         >
           <Icon name="agriculture" className="absolute top-2 right-3 text-7xl opacity-15" />
@@ -117,28 +117,28 @@ export default function PlotPage() {
           </p>
           <div className="flex gap-6 mt-4 relative">
             <div>
-              <p className="text-[10px] font-bold uppercase opacity-60">{t("plot.perHectare")}</p>
+              <p className="text-[11px] font-bold uppercase opacity-60">{t("plot.perHectare")}</p>
               <p className="font-bold">{formatMoney(Math.round(perHa), currency)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase opacity-60">{t("plot.return")}</p>
+              <p className="text-[11px] font-bold uppercase opacity-60">{t("plot.return")}</p>
               <p className="font-bold">{roi === null ? "–" : `${Math.round(roi)}%`}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase opacity-60">{t("plot.costPerKg")}</p>
+              <p className="text-[11px] font-bold uppercase opacity-60">{t("plot.costPerKg")}</p>
               <p className="font-bold">{costPerKg === null ? "–" : formatMoney(costPerKg, currency)}</p>
             </div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("plot.totalSpent")}</p>
+            <p className="text-[11px] font-bold uppercase text-slate-500 mb-1">{t("plot.totalSpent")}</p>
             <p className="text-xl font-bold text-rose-600 dark:text-rose-400">
               <Money totals={totals.expenses} currency={currency} />
             </p>
           </div>
           <div className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 text-center card">
-            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">{t("plot.totalEarned")}</p>
+            <p className="text-[11px] font-bold uppercase text-slate-500 mb-1">{t("plot.totalEarned")}</p>
             <p className="text-xl font-bold text-brand">
               <Money totals={totals.income} currency={currency} />
             </p>
@@ -149,7 +149,7 @@ export default function PlotPage() {
       <section className="px-4 mb-6 grid grid-cols-2 gap-3">
         <Link
           href={`/farm-records/add?plot=${plot.id}`}
-          className="bg-primary text-background-dark font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 btn-glow"
+          className="bg-primary text-on-primary font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 btn-glow"
         >
           <Icon name="add" />
           {t("farm.addRecord")}
@@ -157,7 +157,7 @@ export default function PlotPage() {
         <button
           type="button"
           onClick={exportCSV}
-          className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
+          className="bg-white dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
         >
           <Icon name="download" />
           {t("plot.exportCsv")}

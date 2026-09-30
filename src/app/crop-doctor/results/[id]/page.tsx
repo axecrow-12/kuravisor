@@ -88,7 +88,7 @@ export default function ScanResultsPage() {
         <section className="px-4 mt-4">
           <div className="h-52 rounded-2xl overflow-hidden relative border border-slate-200 dark:border-white/10">
             <img alt={t("results.scannedPlant")} className="w-full h-full object-cover" src={scan.image} />
-            <span className="absolute top-3 left-3 bg-primary px-3 py-1 rounded-full text-sm font-bold text-background-dark">
+            <span className="absolute top-3 left-3 bg-primary px-3 py-1 rounded-full text-sm font-bold text-on-primary">
               {cropName}
             </span>
           </div>
@@ -170,7 +170,7 @@ export default function ScanResultsPage() {
               <ol className="space-y-3">
                 {top.firstSteps.map((step, i) => (
                   <li key={step} className="flex items-start gap-3">
-                    <span className="size-6 rounded-full bg-primary text-background-dark text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="size-6 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <p className="text-sm">{step}</p>
@@ -182,7 +182,7 @@ export default function ScanResultsPage() {
             <div className="space-y-2">
               <Link
                 href={`/treatments/${top.id}`}
-                className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
+                className="w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
               >
                 <Icon name="medication" />
                 {t("results.fullPlan")}
@@ -199,7 +199,7 @@ export default function ScanResultsPage() {
 
             {others.length > 0 && (
               <section>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2 mt-2">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2 mt-2 font-display">
                   {t("results.couldAlsoBe")}
                 </h3>
                 <div className="space-y-2">
@@ -225,7 +225,7 @@ export default function ScanResultsPage() {
 
         {scan.symptoms.length > 0 && (
           <section>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2 mt-2">{t("results.signsReported")}</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2 mt-2 font-display">{t("results.signsReported")}</h3>
             <div className="flex flex-wrap gap-2">
               {scan.symptoms.map((s) => (
                 <span key={s} className="text-xs bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-full">
@@ -244,7 +244,7 @@ export default function ScanResultsPage() {
         <div className="grid grid-cols-2 gap-2">
           <Link
             href="/crop-doctor"
-            className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
+            className="bg-white dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
           >
             <Icon name="photo_camera" />
             {t("results.newCheck")}

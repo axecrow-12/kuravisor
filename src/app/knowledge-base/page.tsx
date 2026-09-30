@@ -106,7 +106,7 @@ export default function KnowledgeBasePage() {
               onClick={() => setCategory(cat.id)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold shrink-0 transition-colors ${
                 category === cat.id
-                  ? "bg-primary text-background-dark"
+                  ? "bg-primary text-on-primary"
                   : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10"
               }`}
             >
@@ -134,7 +134,7 @@ export default function KnowledgeBasePage() {
                 {(a.crops.length ? a.crops.map(crop) : [t("kb.guide")]).map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] font-bold bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-400"
+                    className="text-[11px] font-bold bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-400"
                   >
                     {tag}
                   </span>

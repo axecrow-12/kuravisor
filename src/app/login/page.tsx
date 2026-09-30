@@ -104,7 +104,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-60"
+          className="w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow disabled:opacity-60"
         >
           <Icon name={busy ? "progress_activity" : "login"} className={busy ? "animate-spin" : ""} />
           {busy ? t("auth.signingIn") : t("auth.signIn")}

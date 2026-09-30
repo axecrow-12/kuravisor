@@ -3,39 +3,47 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: #0df20d;
-  /* Readable green for text and icons on light surfaces; swapped for the
-     bright brand green in dark mode below. */
-  --color-brand: #0f7a0f;
-  --color-background-light: #f5f8f5;
-  --color-background-dark: #102210;
+  /* Deep leaf green for fills (buttons, nav, highlight cards) with white
+     text on top; 5:1 contrast so bold labels stay readable in sunlight. */
+  --color-primary: #1b7a3d;
+  --color-on-primary: #ffffff;
+  /* Green for text and icons on light surfaces. */
+  --color-brand: #17703a;
+  /* Warm accent for money and harvest highlights. */
+  --color-accent: #c26a06;
+  --color-background-light: #f4f5ef;
+  --color-background-dark: #0c1811;
 
   --font-display: var(--font-lato), "Lato", system-ui, sans-serif;
   --font-heading: var(--font-libre), "Libre Baskerville", Georgia, serif;
   --font-mono: var(--font-lato), "Lato", system-ui, sans-serif;
 
-  /* Tighter radii — crisp, not bubbly */
+  /* Soft, friendly radii */
   --radius-none: 0px;
-  --radius-sm: 0.25rem;
-  --radius: 0.5rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.625rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 0.875rem;
-  --radius-3xl: 1rem;
+  --radius-sm: 0.375rem;
+  --radius: 0.625rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+  --radius-3xl: 1.5rem;
   --radius-full: 9999px;
 
-  /* Green-tinted shadows */
-  --shadow-card: 0 1px 3px rgba(19, 236, 19, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 2px 8px rgba(19, 236, 19, 0.15), 0 8px 24px rgba(0, 0, 0, 0.06);
-  --shadow-glow: 0 0 12px rgba(19, 236, 19, 0.25), 0 0 4px rgba(19, 236, 19, 0.15);
-  --shadow-glow-lg: 0 0 20px rgba(19, 236, 19, 0.35), 0 0 8px rgba(19, 236, 19, 0.2);
-  --shadow-btn: 0 2px 8px rgba(19, 236, 19, 0.3);
-  --shadow-btn-hover: 0 4px 16px rgba(19, 236, 19, 0.45), 0 0 4px rgba(19, 236, 19, 0.2);
+  /* Neutral, low elevation shadows */
+  --shadow-card: 0 1px 2px rgba(20, 32, 24, 0.05), 0 2px 10px rgba(20, 32, 24, 0.04);
+  --shadow-card-hover: 0 2px 4px rgba(20, 32, 24, 0.06), 0 8px 24px rgba(20, 32, 24, 0.08);
+  --shadow-btn: 0 1px 2px rgba(10, 40, 20, 0.15), 0 4px 14px rgba(27, 122, 61, 0.22);
+  --shadow-btn-hover: 0 2px 4px rgba(10, 40, 20, 0.15), 0 8px 22px rgba(27, 122, 61, 0.3);
 }
 
 .dark {
-  --color-brand: #3cf53c;
+  --color-primary: #238c48;
+  --color-brand: #6fdc95;
+  --color-accent: #f5a524;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-btn: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-btn-hover: 0 8px 22px rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
 
@@ -92,19 +100,18 @@ body {
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* ── Headings use Libre Baskerville ── */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
+/* ── Headings use Libre Baskerville (in the base layer so utilities such
+   as font-display on small section labels can override it) ── */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+  }
 }
 
 /* ── Reusable card surface ── */
 .card {
   box-shadow: var(--shadow-card);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-.card:hover {
-  box-shadow: var(--shadow-card-hover);
-  border-color: rgba(19, 236, 19, 0.25);
 }
 .card-interactive {
   box-shadow: var(--shadow-card);
@@ -112,87 +119,70 @@ h1, h2, h3, h4, h5, h6 {
 }
 .card-interactive:hover {
   box-shadow: var(--shadow-card-hover);
-  border-color: rgba(19, 236, 19, 0.25);
-  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 .card-interactive:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-card);
+  transform: scale(0.99);
 }
 
-/* ── Primary button glow ── */
+/* ── Primary buttons ── */
 .btn-glow {
   box-shadow: var(--shadow-btn);
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  transition: box-shadow 0.2s ease, transform 0.12s ease, filter 0.2s ease;
 }
 .btn-glow:hover {
   box-shadow: var(--shadow-btn-hover);
-  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 .btn-glow:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-btn);
+  transform: scale(0.98);
 }
 
-/* ── Subtle green glow for accent elements ── */
+/* ── Raised accent surfaces (highlight cards, small primary icon buttons) ── */
 .glow {
-  box-shadow: var(--shadow-glow);
-  transition: box-shadow 0.2s ease;
-}
-.glow:hover {
-  box-shadow: var(--shadow-glow-lg);
+  box-shadow: var(--shadow-btn);
 }
 
 /* ── Icon button hover ── */
 .icon-btn {
-  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 .icon-btn:hover {
-  background-color: rgba(19, 236, 19, 0.12);
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
   color: var(--color-brand);
-  box-shadow: 0 0 8px rgba(19, 236, 19, 0.15);
 }
 
 /* ── Chip / tag hover ── */
 .chip-hover {
-  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .chip-hover:hover {
-  box-shadow: 0 0 6px rgba(19, 236, 19, 0.12);
-  border-color: rgba(19, 236, 19, 0.2);
+  border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
-/* ── Input focus glow ── */
+/* ── Input focus ring ── */
 .input-glow {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .input-glow:focus-within {
-  border-color: rgba(19, 236, 19, 0.4);
-  box-shadow: 0 0 0 3px rgba(19, 236, 19, 0.08), 0 0 8px rgba(19, 236, 19, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+/* ── Visible keyboard focus everywhere ── */
+:where(a, button, [role="button"], [role="switch"], [role="checkbox"]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .topo-pattern {
-  background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 100 C 20 80, 40 80, 60 100 S 100 120, 140 100 S 180 80, 200 100' stroke='%2313ec13' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3Cpath d='M0 150 C 30 130, 60 130, 90 150 S 140 170, 200 150' stroke='%2313ec13' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3Cpath d='M0 50 C 50 30, 100 70, 150 50 S 200 30, 250 50' stroke='%2313ec13' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3C/svg%3E");
-}
-
-.glass-nav {
-  background: rgba(246, 248, 246, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 -2px 20px rgba(19, 236, 19, 0.08), 0 -1px 6px rgba(0, 0, 0, 0.04);
+  background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 100 C 20 80, 40 80, 60 100 S 100 120, 140 100 S 180 80, 200 100' stroke='%231b7a3d' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3Cpath d='M0 150 C 30 130, 60 130, 90 150 S 140 170, 200 150' stroke='%231b7a3d' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3Cpath d='M0 50 C 50 30, 100 70, 150 50 S 200 30, 250 50' stroke='%231b7a3d' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3C/svg%3E");
 }
 
 .scanner-grid {
   background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(19, 236, 19, 0.1) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(19, 236, 19, 0.1) 1px, transparent 1px);
-}
-
-.scan-line {
-  height: 2px;
-  background: linear-gradient(to right, transparent, #13ec13, transparent);
-  box-shadow: 0 0 15px #13ec13;
-  top: 40%;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
 }
 
 .fill-1 {

@@ -12,7 +12,7 @@ import { actions, useAppState, type Currency, type RecordType } from "@/lib/stor
 
 const TYPES: { value: RecordType; label: MessageKey; save: MessageKey; icon: string; active: string }[] = [
   { value: "expense", label: "record.expense", save: "addRecord.saveExpense", icon: "arrow_upward", active: "bg-rose-500 text-white" },
-  { value: "income", label: "record.income", save: "addRecord.saveIncome", icon: "arrow_downward", active: "bg-primary text-background-dark" },
+  { value: "income", label: "record.income", save: "addRecord.saveIncome", icon: "arrow_downward", active: "bg-primary text-on-primary" },
   { value: "harvest", label: "record.harvest", save: "addRecord.saveHarvest", icon: "agriculture", active: "bg-amber-500 text-white" },
 ];
 

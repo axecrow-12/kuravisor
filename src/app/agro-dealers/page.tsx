@@ -66,7 +66,7 @@ export default function AgroDealersPage() {
             type="button"
             onClick={openSheet}
             aria-label={t("dealers.add")}
-            className="size-10 flex items-center justify-center rounded-full bg-primary text-background-dark glow"
+            className="size-10 flex items-center justify-center rounded-full bg-primary text-on-primary glow"
           >
             <Icon name="add_business" className="text-xl" />
           </button>
@@ -161,7 +161,7 @@ export default function AgroDealersPage() {
                     {d.phone ? (
                       <a
                         href={`tel:${d.phone.replace(/\s+/g, "")}`}
-                        className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-background-dark text-sm font-bold"
+                        className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-bold"
                       >
                         <Icon name="call" className="text-lg" />
                         {t("dealers.call")}
@@ -221,7 +221,7 @@ export default function AgroDealersPage() {
           <FormError message={error} />
           <button
             type="submit"
-            className="w-full py-4 rounded-xl bg-primary text-background-dark font-bold flex items-center justify-center gap-2 btn-glow"
+            className="w-full py-4 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center gap-2 btn-glow"
           >
             <Icon name="save" />
             {t("dealers.save")}

@@ -89,14 +89,14 @@ export default function ArticleView({ id }: { id: string }) {
       <section className="px-4 grid grid-cols-2 gap-2">
         <Link
           href={`/treatments/${c.id}`}
-          className="bg-primary text-background-dark font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 btn-glow"
+          className="bg-primary text-on-primary font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 btn-glow"
         >
           <Icon name="medication" />
           {t("treatment.title")}
         </Link>
         <Link
           href="/crop-doctor"
-          className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
+          className="bg-white dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2"
         >
           <Icon name="photo_camera" />
           {t("home.checkPlant")}

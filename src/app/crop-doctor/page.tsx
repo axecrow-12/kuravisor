@@ -16,7 +16,7 @@ import { actions, useAppState } from "@/lib/store";
 function StepTitle({ n, title, hint }: { n: number; title: string; hint?: string }) {
   return (
     <div className="flex items-start gap-3 mb-3">
-      <span className="size-7 rounded-full bg-primary text-background-dark font-bold text-sm flex items-center justify-center shrink-0">
+      <span className="size-7 rounded-full bg-primary text-on-primary font-bold text-sm flex items-center justify-center shrink-0">
         {n}
       </span>
       <div>
@@ -175,7 +175,7 @@ export default function CropDoctorPage() {
             <button
               type="button"
               onClick={openCamera}
-              className="flex flex-col items-center gap-2 bg-primary text-background-dark p-5 rounded-2xl btn-glow"
+              className="flex flex-col items-center gap-2 bg-primary text-on-primary p-5 rounded-2xl btn-glow"
             >
               <Icon name="photo_camera" className="text-4xl" filled />
               <span className="font-bold">{t("doctor.takePhoto")}</span>
@@ -252,7 +252,7 @@ export default function CropDoctorPage() {
                 >
                   <span
                     className={`size-6 rounded-md border-2 flex items-center justify-center shrink-0 ${
-                      on ? "bg-primary border-primary text-background-dark" : "border-slate-300 dark:border-white/20"
+                      on ? "bg-primary border-primary text-on-primary" : "border-slate-300 dark:border-white/20"
                     }`}
                   >
                     {on && <Icon name="check" className="text-base font-bold" />}
@@ -266,7 +266,7 @@ export default function CropDoctorPage() {
           <button
             type="button"
             onClick={runCheck}
-            className="mt-5 w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-lg btn-glow"
+            className="mt-5 w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 text-lg btn-glow"
           >
             <Icon name={picked.length ? "stethoscope" : "check_circle"} />
             {picked.length ? t("doctor.checkSigns", { count: picked.length }) : t("doctor.saveHealthy")}

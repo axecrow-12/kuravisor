@@ -42,9 +42,9 @@ export default function OnboardingPage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6">
         <div
           key={step.icon}
-          className="size-36 rounded-full bg-primary/10 flex items-center justify-center mb-8 border-2 border-primary/25 glow animate-fade"
+          className="size-36 rounded-full bg-gradient-to-br from-primary to-emerald-900 text-white flex items-center justify-center mb-8 ring-8 ring-primary/10 shadow-xl animate-fade"
         >
-          <Icon name={step.icon} className="text-brand text-7xl" />
+          <Icon name={step.icon} className="text-7xl" />
         </div>
         <h1 className="text-2xl font-bold mb-3 text-center">{t(step.title)}</h1>
         <p className="text-base text-slate-600 dark:text-slate-400 text-center max-w-xs leading-relaxed">
@@ -72,7 +72,7 @@ export default function OnboardingPage() {
         {last ? (
           <Link
             href="/register"
-            className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
+            className="w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
           >
             {t("onboarding.getStarted")}
             <Icon name="arrow_forward" />
@@ -81,7 +81,7 @@ export default function OnboardingPage() {
           <button
             type="button"
             onClick={() => setCurrentStep(currentStep + 1)}
-            className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
+            className="w-full bg-primary text-on-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 btn-glow"
           >
             {t("common.next")}
             <Icon name="arrow_forward" />

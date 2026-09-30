@@ -47,7 +47,7 @@ function TaskItem({ task, plotName }: { task: Task; plotName?: string }) {
         onClick={() => actions.toggleTask(task.id)}
         className={`size-7 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
           task.done
-            ? "bg-primary border-primary text-background-dark"
+            ? "bg-primary border-primary text-on-primary"
             : "border-slate-300 dark:border-white/20 hover:border-primary hover:bg-primary/10"
         }`}
       >
@@ -144,7 +144,7 @@ export default function CalendarPage() {
             type="button"
             onClick={openSheet}
             aria-label={t("tasks.add")}
-            className="size-10 flex items-center justify-center rounded-full bg-primary text-background-dark glow"
+            className="size-10 flex items-center justify-center rounded-full bg-primary text-on-primary glow"
           >
             <Icon name="add" className="text-xl" />
           </button>
@@ -291,7 +291,7 @@ export default function CalendarPage() {
 
           <button
             type="submit"
-            className="w-full py-4 rounded-xl bg-primary text-background-dark font-bold flex items-center justify-center gap-2 btn-glow"
+            className="w-full py-4 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center gap-2 btn-glow"
           >
             <Icon name="add_task" />
             {t("tasks.add")}
