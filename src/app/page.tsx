@@ -38,81 +38,96 @@ export default function Home() {
   ];
   const setupLeft = setup.filter((s) => !s.done).length;
 
-  const tiles = [
+  const stats = [
     {
       href: "/farm-records",
-      icon: "potted_plant",
-      title: t("home.tileFarm"),
-      stat: plots.length ? t("home.activePlots", { count: activePlots.length }) : t("home.addPlot"),
-      bg: "from-emerald-600 to-green-900",
+      label: t("money.profit"),
+      value: formatMoney(seasonProfit, settings.currency),
+      warn: seasonProfit < 0,
     },
-    {
-      href: "/crop-doctor",
-      icon: "health_metrics",
-      title: t("nav.cropDoctor"),
-      stat: lastScan ? t("home.lastCheck", { when: ago(lastScan.createdAt) }) : t("home.checkPlant"),
-      bg: "from-lime-600 to-emerald-800",
-    },
-    {
-      href: "/farm-records",
-      icon: "payments",
-      title: t("home.tileMoney"),
-      stat: records.length
-        ? t("home.profit", { amount: formatMoney(seasonProfit, settings.currency) })
-        : t("home.noRecords"),
-      bg: "from-amber-500 to-orange-700",
-    },
-    {
-      href: "/calendar",
-      icon: "calendar_month",
-      title: t("nav.tasks"),
-      stat: dueCount
-        ? t("home.dueNow", { count: dueCount })
-        : openTasks.length
-          ? t("home.upcoming", { count: openTasks.length })
-          : t("home.nothingPlanned"),
-      bg: "from-sky-600 to-indigo-800",
-    },
+    { href: "/calendar", label: t("home.statDue"), value: String(dueCount), warn: dueCount > 0 },
+    { href: "/farm-records", label: t("home.statPlots"), value: String(activePlots.length), warn: false },
+  ];
+
+  const quickActions = [
+    { href: "/farm-records/add", icon: "post_add", label: t("farm.addRecord"), tone: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
+    { href: "/calendar", icon: "add_task", label: t("tasks.add"), tone: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400" },
+    { href: "/knowledge-base", icon: "menu_book", label: t("kb.title"), tone: "bg-primary/10 text-brand" },
+    { href: "/agro-dealers", icon: "storefront", label: t("dealers.title"), tone: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400" },
   ];
 
   const firstName = profile?.name.split(/\s+/)[0] ?? "";
 
   return (
     <div className="relative flex min-h-dvh w-full flex-col pb-28">
-      <header className="flex items-center gap-3 bg-background-light/85 dark:bg-background-dark/85 backdrop-blur-md sticky top-0 z-20 px-4 pt-5 pb-3">
-        <Link
-          href="/profile"
-          aria-label={t("nav.profile")}
-          className="size-11 shrink-0 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center font-bold text-brand"
-        >
-          {initials(profile?.name ?? "")}
-        </Link>
-        <div className="flex-1 min-w-0">
-          <p className="text-slate-500 text-xs truncate">
-            {t(greetingKey())} · {longToday()}
-          </p>
-          <h1 className="text-lg font-bold leading-tight truncate">{firstName}</h1>
+      <header className="relative overflow-hidden bg-gradient-to-br from-primary via-emerald-800 to-emerald-950 text-white px-4 pt-5 pb-14 rounded-b-3xl">
+        <div className="absolute inset-0 topo-pattern-light" aria-hidden />
+        <Icon name="eco" className="absolute -right-6 -top-4 text-[140px] text-white/5" />
+
+        <div className="relative flex items-center gap-3">
+          <Link
+            href="/profile"
+            aria-label={t("nav.profile")}
+            className="size-11 shrink-0 rounded-full bg-white/15 ring-2 ring-white/30 flex items-center justify-center font-bold"
+          >
+            {initials(profile?.name ?? "")}
+          </Link>
+          <div className="flex-1 min-w-0">
+            <p className="text-white/75 text-xs truncate">
+              {t(greetingKey())} · {longToday()}
+            </p>
+            <h1 className="text-xl font-bold leading-tight truncate">{firstName}</h1>
+          </div>
+          <Link
+            href="/knowledge-base"
+            aria-label={t("home.searchKb")}
+            className="flex size-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition-colors"
+          >
+            <Icon name="search" />
+          </Link>
+          <Link
+            href="/calendar"
+            aria-label={dueCount ? t("home.dueNow", { count: dueCount }) : t("nav.tasks")}
+            className="relative flex size-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition-colors"
+          >
+            <Icon name="notifications" />
+            {dueCount > 0 && (
+              <span className="absolute top-2 right-2 size-2.5 bg-rose-500 rounded-full ring-2 ring-emerald-800" />
+            )}
+          </Link>
         </div>
-        <Link
-          href="/knowledge-base"
-          aria-label={t("home.searchKb")}
-          className="flex size-10 items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 icon-btn"
-        >
-          <Icon name="search" />
-        </Link>
-        <Link
-          href="/calendar"
-          aria-label={dueCount ? t("home.dueNow", { count: dueCount }) : t("nav.tasks")}
-          className="relative flex size-10 items-center justify-center rounded-full bg-slate-200/60 dark:bg-white/10 icon-btn"
-        >
-          <Icon name="notifications" />
-          {dueCount > 0 && (
-            <span className="absolute top-2 right-2 size-2.5 bg-rose-500 rounded-full border-2 border-background-light dark:border-background-dark" />
-          )}
-        </Link>
+
+        <div className="relative grid grid-cols-3 gap-2 mt-5">
+          {stats.map((s) => (
+            <Link
+              key={s.label}
+              href={s.href}
+              className="flex flex-col justify-between gap-1 rounded-2xl bg-white/12 hover:bg-white/20 backdrop-blur-sm px-3 py-2.5 transition-colors"
+            >
+              <p className="text-xs font-semibold leading-tight text-white/75 line-clamp-2">{s.label}</p>
+              <p className={`text-xl font-bold leading-tight truncate ${s.warn ? "text-amber-300" : ""}`}>{s.value}</p>
+            </Link>
+          ))}
+        </div>
       </header>
 
-      <main className="px-4 pt-2 space-y-7">
+      <main className="px-4 -mt-9 relative space-y-6">
+        <Link
+          href="/crop-doctor"
+          className="flex items-center gap-4 p-4 bg-white dark:bg-[#15291d] rounded-2xl border border-slate-100 dark:border-white/10 shadow-lg card-interactive"
+        >
+          <div className="size-14 shrink-0 rounded-2xl bg-primary text-on-primary flex items-center justify-center btn-glow">
+            <Icon name="photo_camera" className="text-3xl" filled />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-base">{t("home.checkPlant")}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {lastScan ? t("home.lastCheck", { when: ago(lastScan.createdAt) }) : t("home.checkPlantHint")}
+            </p>
+          </div>
+          <Icon name="arrow_forward" className="text-brand" />
+        </Link>
+
         {alertScan && alertCondition && (
           <Link
             href={`/crop-doctor/results/${alertScan.id}`}
@@ -170,37 +185,6 @@ export default function Home() {
           </section>
         )}
 
-        <section className="grid grid-cols-2 gap-3">
-          {tiles.map((tile) => (
-            <Link
-              key={tile.icon}
-              href={tile.href}
-              className={`group relative overflow-hidden rounded-2xl aspect-[5/4] p-4 flex flex-col justify-end bg-gradient-to-br ${tile.bg} text-white card-interactive`}
-            >
-              <div className="absolute inset-0 topo-pattern opacity-60" />
-              <Icon
-                name={tile.icon}
-                className="absolute -top-2 -right-2 text-[88px] text-white/15 transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="relative">
-                <div className="size-9 rounded-full bg-white/20 flex items-center justify-center mb-2">
-                  <Icon name={tile.icon} className="text-xl" />
-                </div>
-                <p className="text-base font-bold leading-tight">{tile.title}</p>
-                <p className="text-white/80 text-xs mt-0.5 truncate">{tile.stat}</p>
-              </div>
-            </Link>
-          ))}
-        </section>
-
-        <section className="bg-primary/10 border border-primary/20 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon name="lightbulb" className="text-brand" filled />
-            <h2 className="font-bold">{t("home.tipOfTheDay")}</h2>
-          </div>
-          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{tipOfTheDay(lang)}</p>
-        </section>
-
         <section>
           <SectionTitle action={{ href: "/calendar", label: t("home.allTasks") }}>{t("home.comingUp")}</SectionTitle>
           {openTasks.length === 0 ? (
@@ -212,25 +196,28 @@ export default function Home() {
               {t("home.noTasks")}
             </Link>
           ) : (
-            <ul className="space-y-2">
+            <ul className="bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 divide-y divide-slate-100 dark:divide-white/5 card">
               {openTasks.slice(0, 3).map((task) => {
                 const overdue = task.date < today;
                 return (
-                  <li
-                    key={task.id}
-                    className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 card"
-                  >
+                  <li key={task.id} className="flex items-center gap-3 p-3.5">
                     <button
                       type="button"
                       onClick={() => actions.toggleTask(task.id)}
                       aria-label={t("tasks.markDone", { title: task.title })}
-                      className="size-8 rounded-full border-2 border-slate-300 dark:border-white/20 flex items-center justify-center hover:border-primary hover:bg-primary/10 shrink-0"
+                      className="size-7 rounded-full border-2 border-slate-300 dark:border-white/20 flex items-center justify-center hover:border-primary hover:bg-primary/10 shrink-0"
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm truncate">{task.title}</p>
                       {task.notes && <p className="text-xs text-slate-500 truncate">{task.notes}</p>}
                     </div>
-                    <span className={`text-xs font-bold shrink-0 ${overdue ? "text-rose-500" : "text-slate-500"}`}>
+                    <span
+                      className={`text-[11px] font-bold shrink-0 px-2 py-1 rounded-full ${
+                        overdue
+                          ? "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400"
+                          : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                      }`}
+                    >
                       {relDay(task.date)}
                     </span>
                   </li>
@@ -240,21 +227,35 @@ export default function Home() {
           )}
         </section>
 
-        <section className="grid grid-cols-2 gap-3">
-          <Link
-            href="/knowledge-base"
-            className="flex items-center gap-3 p-4 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 card-interactive"
-          >
-            <Icon name="menu_book" className="text-brand" />
-            <span className="text-sm font-bold">{t("kb.title")}</span>
-          </Link>
-          <Link
-            href="/agro-dealers"
-            className="flex items-center gap-3 p-4 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 card-interactive"
-          >
-            <Icon name="storefront" className="text-brand" />
-            <span className="text-sm font-bold">{t("dealers.title")}</span>
-          </Link>
+        <section>
+          <SectionTitle>{t("home.quickActions")}</SectionTitle>
+          <div className="grid grid-cols-4 gap-2">
+            {quickActions.map((a) => (
+              <Link
+                key={a.href + a.icon}
+                href={a.href}
+                className="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-white dark:hover:bg-white/5 transition-colors"
+              >
+                <span className={`size-14 rounded-2xl flex items-center justify-center ${a.tone}`}>
+                  <Icon name={a.icon} className="text-2xl" />
+                </span>
+                <span className="text-[11px] font-bold text-center leading-tight text-slate-700 dark:text-slate-300">
+                  {a.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden rounded-2xl p-4 bg-amber-50 border border-amber-200/70 dark:bg-amber-500/10 dark:border-amber-500/20">
+          <Icon name="lightbulb" className="absolute -right-3 -bottom-4 text-[96px] text-amber-400/15" filled />
+          <div className="relative flex items-center gap-2 mb-2">
+            <span className="size-8 rounded-full bg-amber-400/25 text-amber-700 dark:text-amber-300 flex items-center justify-center">
+              <Icon name="lightbulb" className="text-lg" filled />
+            </span>
+            <h2 className="font-bold">{t("home.tipOfTheDay")}</h2>
+          </div>
+          <p className="relative text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{tipOfTheDay(lang)}</p>
         </section>
       </main>
 

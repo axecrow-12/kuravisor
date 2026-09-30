@@ -179,6 +179,11 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 100 C 20 80, 40 80, 60 100 S 100 120, 140 100 S 180 80, 200 100' stroke='%231b7a3d' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3Cpath d='M0 150 C 30 130, 60 130, 90 150 S 140 170, 200 150' stroke='%231b7a3d' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3Cpath d='M0 50 C 50 30, 100 70, 150 50 S 200 30, 250 50' stroke='%231b7a3d' stroke-width='0.5' fill='none' opacity='0.05'/%3E%3C/svg%3E");
 }
 
+/* Same contour lines in white, for green or dark banners. */
+.topo-pattern-light {
+  background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 100 C 20 80, 40 80, 60 100 S 100 120, 140 100 S 180 80, 200 100' stroke='%23ffffff' stroke-width='0.5' fill='none' opacity='0.35'/%3E%3Cpath d='M0 150 C 30 130, 60 130, 90 150 S 140 170, 200 150' stroke='%23ffffff' stroke-width='0.5' fill='none' opacity='0.2'/%3E%3Cpath d='M0 50 C 50 30, 100 70, 150 50 S 200 30, 250 50' stroke='%23ffffff' stroke-width='0.5' fill='none' opacity='0.2'/%3E%3C/svg%3E");
+}
+
 .scanner-grid {
   background-size: 40px 40px;
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
